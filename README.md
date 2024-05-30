@@ -18,6 +18,13 @@ Sigue estos pasos para abrir el repositorio en VSCode:
 
 3. **Explora el proyecto:** Una vez abierto en VSCode, podrás explorar y editar el proyecto según sea necesario.
 
+## Comandos Utiles
+
+Crear Superusuario en Django: 
+```bash
+python manage.py createsuperuser
+```
+
 ## Instalación desde Cero
 
 Sigue estos pasos para configurar el entorno de desarrollo:
@@ -43,16 +50,6 @@ python manage.py startapp apirest
 pip freeze > requirements.txt
 call code .
 ```
-
-## Contribución
-
-¡Las contribuciones son bienvenidas! Si deseas contribuir a este proyecto, sigue estos pasos:
-
-1. Hacer un fork del repositorio.
-2. Crear una nueva rama (`git checkout -b feature/feature-name`).
-3. Realizar tus cambios y hacer commits (`git commit -am 'Add new feature'`).
-4. Hacer push a la rama (`git push origin feature/feature-name`).
-5. Crear un nuevo Pull Request.
 
 ## Licencia
 
