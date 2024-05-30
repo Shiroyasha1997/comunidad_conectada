@@ -1,0 +1,83 @@
+Manual de instrucciones de Git
+
+Configuración inicial:
+
+1. Configurar nombre de usuario:
+   git config --global user.name "Tu Nombre"
+
+2. Configurar dirección de correo electrónico:
+   git config --global user.email "tu@email.com"
+
+Crear y clonar repositorios:
+
+3. Iniciar un nuevo repositorio local:
+   git init
+
+4. Clonar un repositorio remoto:
+   git clone <URL_del_repositorio>
+
+Realizar cambios:
+
+5. Verificar el estado de los archivos:
+   git status
+
+6. Agregar archivos al área de preparación:
+   git add <nombre_del_archivo>
+
+7. Agregar todos los archivos al área de preparación:
+   git add .
+
+8. Hacer un commit de los cambios:
+   git commit -m "Mensaje del commit"
+
+Ramas:
+
+9. Crear una nueva rama:
+   git branch <nombre_de_la_rama>
+
+10. Cambiar a una rama específica:
+    git checkout <nombre_de_la_rama>
+
+11. Crear una nueva rama y cambiar a ella al mismo tiempo:
+    git checkout -b <nombre_de_la_nueva_rama>
+
+12. Listar todas las ramas:
+    git branch
+
+Sincronización:
+
+13. Obtener cambios del repositorio remoto:
+    git pull
+
+14. Subir cambios al repositorio remoto:
+    git push
+
+Fusión y gestión de cambios:
+
+15. Fusionar cambios de otra rama a la rama actual:
+    git merge <nombre_de_la_otra_rama>
+
+16. Resolver conflictos de fusión:
+    - Abre los archivos en conflicto.
+    - Edita los archivos para resolver los conflictos.
+    - Agrega los archivos modificados al área de preparación.
+    - Haz un commit para finalizar la fusión.
+
+Historial:
+
+17. Ver el historial de commits:
+    git log
+
+18. Ver los cambios entre commits o ramas:
+    git diff <commit_1> <commit_2>
+
+19. Deshacer cambios locales en un archivo:
+    git checkout -- <nombre_del_archivo>
+
+Ramas remotas:
+
+20. Ver todas las ramas remotas:
+    git branch -r
+
+21. Eliminar una rama remota:
+    git push origin --delete <nombre_de_la_rama_remota>
