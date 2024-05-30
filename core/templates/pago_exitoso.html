@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Pago Exitoso
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+  <h1>Pago Exitoso</h1>
+  <p>Su pago se ha realizado con éxito. ¡Gracias por su compra!</p>
+  <a href="{% url 'generar_certificado_pdf' %}" class="btn btn-primary">Generar Certificado</a>
+</div>
+
+<script>
+  // Detectar el evento de cambio de página o cierre de la ventana
+  window.onbeforeunload = function(event) {
+    // Redirigir al usuario a la página certificados.html
+    window.location.href = "{% url 'certificados' %}";
+  };
+</script>
+{% endblock content %}

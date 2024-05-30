@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Solicitudes de registro
+{% endblock title %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Solicitudes de Registro</h1>
+    {% if solicitudes %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Usuario</th>
+                    <th scope="col">Correo</th>
+                    <th scope="col">Nombre Completo</th>
+                    <th scope="col">Fecha Solicitud</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for solicitud in solicitudes %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>{{ solicitud.username }}</td>
+                        <td>{{ solicitud.email }}</td>
+                        <td>{{ solicitud.first_name }}</td>
+                        <td>{{ solicitud.fecha_solicitud }}</td>
+                        <td>{{ solicitud.estado }}</td>
+                        <td>
+                            {% if solicitud.estado == 'pendiente' %}
+                                <a href="{% url 'aprobar_solicitud' solicitud.id %}" class="btn btn-success btn-sm">Aprobar</a>
+                                <a href="{% url 'rechazar_solicitud' solicitud.id %}" class="btn btn-danger btn-sm">Rechazar</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay solicitudes de registro pendientes.</p>
+    {% endif %}
+</div>
+{% endblock content %}

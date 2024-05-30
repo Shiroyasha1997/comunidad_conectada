@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Certificados
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+  <h1>Certificados</h1>
+  <form method="get" action="{% url 'iniciar_pago' %}">
+    <button type="submit" class="btn btn-primary">Certificado de Residencia</button>
+  </form>
+</div>
+{% endblock content %}

@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %} {% endblock title %}</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'inicio' %}">
+      <img src="{% static 'images/logo.png' %}" alt="Logo" style="width: 45px;">
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item {% if request.path == '/' %}active{% endif %}">
+          <a class="nav-link" href="{% url 'inicio' %}">Inicio</a>
+        </li>
+        <!-- Agrega más elementos del menú aquí -->
+      </ul>
+      {% if user.is_authenticated %}
+        {% if es_admin %}
+          <a class="btn btn-outline-light mr-2" href="{% url 'admin:index' %}" role="button">Panel de administración</a>
+        {% elif es_directivo %}
+          <a class="btn btn-outline-light mr-2" href="{% url 'solicitudes' %}" role="button">Solicitudes</a>
+          <a class="btn btn-outline-light mr-2" href="{% url 'perfil' %}" role="button">Perfil</a>
+        {% elif es_residente %}
+          <!-- Enlace a certificados.html solo para residentes -->
+          <a class="btn btn-outline-light mr-2" href="{% url 'certificados' %}" role="button">Certificados</a>
+          <a class="btn btn-outline-light mr-2" href="{% url 'perfil' %}" role="button">Perfil</a>
+        {% endif %}
+        <a class="btn btn-outline-light" href="{% url 'cerrar_sesion' %}" role="button">Cerrar sesión</a>
+      {% else %}
+        <a class="btn btn-outline-light" href="{% url 'ingresar' %}" role="button">Iniciar sesión</a>
+        <!-- Agregar el enlace a la página de registro -->
+        <a class="btn btn-outline-light ml-2" href="{% url 'registro' %}" role="button">Registrarse</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-5">
+  {% block content %}
+  {% endblock content %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
