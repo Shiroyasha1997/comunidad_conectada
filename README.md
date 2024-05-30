@@ -2,70 +2,47 @@
 
 Este es un proyecto de Django diseñado para crear una plataforma de comunidad en línea. Proporciona características como autenticación de usuarios, una API RESTful, integración con PostgreSQL, integración de pagos con Transbank SDK y generación de informes con ReportLab.
 
-## Instalación
+## Instrucción para abrir el repositorio en VSCode
 
-Sigue estos pasos para configurar el entorno de desarrollo:
+Sigue estos pasos para abrir el repositorio en VSCode:
 
-1. **Actualizar pip:**
+1. **Clona el repositorio:** Abre tu terminal y ejecuta el siguiente comando para clonar el repositorio en tu máquina local:
     ```bash
-    python -m pip install --upgrade pip
+    git clone https://github.com/Shiroyasha1997/comunidad_conectada.git
     ```
 
-2. **Instalar o actualizar virtualenv:**
-    ```bash
-    pip install --upgrade virtualenv
-    ```
-
-3. **Navegar al directorio de proyectos Django:**
-    ```bash
-    cd /D "C:\ProyectosDjango"
-    ```
-
-4. **Crear un nuevo proyecto Django llamado `comunidad_conectada`:**
-    ```bash
-    django-admin startproject comunidad_conectada
-    ```
-
-5. **Ingresar al directorio del proyecto:**
-    ```bash
-    cd comunidad_conectada
-    ```
-
-6. **Crear un entorno virtual llamado `venv`:**
-    ```bash
-    python -m venv venv
-    ```
-
-7. **Activar el entorno virtual:**
-    ```bash
-    venv\Scripts\activate.bat
-    ```
-
-8. **Actualizar pip dentro del entorno virtual:**
-    ```bash
-    python -m pip install --upgrade pip
-    ```
-
-9. **Instalar los paquetes necesarios:**
-    ```bash
-    pip install django pillow djangorestframework psycopg2-binary transbank-sdk reportlab
-    ```
-
-10. **Crear dos nuevas aplicaciones Django llamadas `core` y `apirest`:**
-    ```bash
-    python manage.py startapp core
-    python manage.py startapp apirest
-    ```
-
-11. **Guardar los requisitos instalados en un archivo `requirements.txt`:**
-    ```bash
-    pip freeze > requirements.txt
-    ```
-
-12. **Abrir el proyecto en tu editor de código preferido:**
+2. **Abre el repositorio en VSCode:** Navega hasta el directorio del repositorio clonado y abre VSCode desde la terminal usando el siguiente comando:
     ```bash
     code .
     ```
+
+3. **Explora el proyecto:** Una vez abierto en VSCode, podrás explorar y editar el proyecto según sea necesario.
+
+## Instalación desde Cero
+
+Sigue estos pasos para configurar el entorno de desarrollo:
+
+**Ejecutar este Script dentro de tu CMD para la creación de la base del proyecto:**
+```bash
+python -m pip install --upgrade pip
+pip install --upgrade virtualenv
+call cd /D "C:\ProyectosDjango"
+call django-admin startproject comunidad_conectada
+call cd comunidad_conectada
+python -m venv venv
+call venv\Scripts\activate.bat
+python -m pip install --upgrade pip
+pip install django
+pip install pillow
+pip install djangorestframework
+pip install psycopg2-binary
+pip install transbank-sdk
+pip install reportlab
+python manage.py startapp core
+python manage.py startapp apirest
+pip freeze > requirements.txt
+call code .
+```
 
 ## Contribución
 
