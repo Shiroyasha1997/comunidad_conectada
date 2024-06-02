@@ -78,12 +78,8 @@ WSGI_APPLICATION = 'comunidad_conectada.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'comunidad_conectada',
-        'USER': 'postgres',
-        'PASSWORD': '42035505',
-        'HOST': 'localhost',  # O la dirección IP donde está alojada tu base de datos PostgreSQL
-        'PORT': '5432',       # El puerto por defecto de PostgreSQL es 5432
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
