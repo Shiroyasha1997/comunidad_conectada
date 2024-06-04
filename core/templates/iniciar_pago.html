@@ -5,20 +5,31 @@
 {% endblock title %}
 
 {% block content %}
-<div class="container">
-  <h1>Carrito de Compras</h1>
-  <p>El costo del certificado de residencia es de $1000.</p>
-  <form method="post" action="{% url 'iniciar_pago' %}">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">Pagar</button>
-  </form>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header text-center">
+          <h2>Carrito de Compras</h2>
+        </div>
+        <div class="card-body">
+          <p class="lead">El costo del certificado de residencia es de $1000.</p>
+          <form method="post" action="{% url 'iniciar_pago' %}">
+            {% csrf_token %}
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary btn-lg">Pagar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Contenedor de la alerta modal -->
-<div id="alertContainer" class="modal" style="display: none;">
-  <div class="modal-dialog">
+<div id="alertContainer" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <!-- Contenido de la alerta -->
       <div class="modal-header">
         <h5 class="modal-title">Error</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -28,6 +39,9 @@
       <div class="modal-body">
         <p id="alertMessage">Hubo un error al procesar la transacción. Por favor, inténtalo de nuevo.</p>
       </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -36,13 +50,15 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
-  // Obtener el parámetro 'error' de la URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const error = urlParams.get('error');
+  $(document).ready(function() {
+    // Obtener el parámetro 'error' de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
 
-  // Mostrar la alerta modal si hay un error
-  if (error === '1') {
-    $('#alertContainer').modal('show');
-  }
+    // Mostrar la alerta modal si hay un error
+    if (error === '1') {
+      $('#alertContainer').modal('show');
+    }
+  });
 </script>
 {% endblock content %}

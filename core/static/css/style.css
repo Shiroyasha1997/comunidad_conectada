@@ -1,0 +1,9 @@
+body {
+    background: linear-gradient(to bottom, #4d7fa8, #a0b9ce);
+    background-repeat: no-repeat; /* No se repite */
+    background-size: cover; /* Se expande para cubrir todo el tamaño */
+}
+
+body {
+    height: 100vh; /* Ocupa el 100% de la altura de la ventana */
+}

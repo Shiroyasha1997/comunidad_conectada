@@ -7,6 +7,8 @@
   <title>{% block title %} {% endblock title %}</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <!-- Enlace al CDN de Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
 
@@ -25,23 +27,39 @@
         </li>
         <!-- Agrega más elementos del menú aquí -->
       </ul>
-      {% if user.is_authenticated %}
-        {% if es_admin %}
-          <a class="btn btn-outline-light mr-2" href="{% url 'admin:index' %}" role="button">Panel de administración</a>
-        {% elif es_directivo %}
-          <a class="btn btn-outline-light mr-2" href="{% url 'solicitudes' %}" role="button">Solicitudes</a>
-          <a class="btn btn-outline-light mr-2" href="{% url 'perfil' %}" role="button">Perfil</a>
-        {% elif es_residente %}
-          <!-- Enlace a certificados.html solo para residentes -->
-          <a class="btn btn-outline-light mr-2" href="{% url 'certificados' %}" role="button">Certificados</a>
-          <a class="btn btn-outline-light mr-2" href="{% url 'perfil' %}" role="button">Perfil</a>
+      <ul class="navbar-nav ml-auto">
+        {% if user.is_authenticated %}
+          {% if es_admin %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'admin:index' %}">Panel de administración</a>
+            </li>
+          {% elif es_directivo %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'solicitudes' %}">Solicitudes</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'perfil' %}">Perfil</a>
+            </li>
+          {% elif es_residente %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'certificados' %}">Certificados</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'perfil' %}">Perfil</a>
+            </li>
+          {% endif %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'cerrar_sesion' %}">Cerrar sesión</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'ingresar' %}">Iniciar sesión</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'registro' %}">Registrarse</a>
+          </li>
         {% endif %}
-        <a class="btn btn-outline-light" href="{% url 'cerrar_sesion' %}" role="button">Cerrar sesión</a>
-      {% else %}
-        <a class="btn btn-outline-light" href="{% url 'ingresar' %}" role="button">Iniciar sesión</a>
-        <!-- Agregar el enlace a la página de registro -->
-        <a class="btn btn-outline-light ml-2" href="{% url 'registro' %}" role="button">Registrarse</a>
-      {% endif %}
+      </ul>
     </div>
   </div>
 </nav>

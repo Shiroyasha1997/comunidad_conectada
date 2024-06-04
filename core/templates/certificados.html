@@ -5,10 +5,50 @@
 {% endblock title %}
 
 {% block content %}
-<div class="container">
-  <h1>Certificados</h1>
-  <form method="get" action="{% url 'iniciar_pago' %}">
-    <button type="submit" class="btn btn-primary">Certificado de Residencia</button>
-  </form>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="text-center mb-4">
+        <h1>Certificados</h1>
+      </div>
+      <div class="text-center mb-4">
+        <form method="get" action="{% url 'iniciar_pago' %}">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-certificate"></i> Certificado de Residencia
+          </button>
+        </form>
+      </div>
+      
+      <div>
+        <h2 class="text-center mb-4">Historial de Certificados</h2>
+        <table class="table table-bordered table-hover">
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Fecha de Compra</th>
+              <th scope="col">Detalle</th>
+              <th scope="col">Descargar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Iterar sobre los certificados del usuario y mostrarlos en la tabla -->
+            {% for certificado in certificados_usuario %}
+            <tr>
+              <th scope="row">{{ forloop.counter }}</th>
+              <td>{{ certificado.fecha_compra }}</td>
+              <td>{{ certificado.detalle }}</td>
+              <td>
+                <!-- Botón de descarga del certificado -->
+                <a href="{{ certificado.pdf_certificado.url }}" class="btn btn-success" target="_blank">
+                  Descargar PDF
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock content %}

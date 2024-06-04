@@ -131,12 +131,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'core.CustomUser'
 
-
-#API DE MAIL FALSO
+#OUTLOOK
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_PORT = 2525  # Puedes cambiarlo según la configuración de Mailtrap
-EMAIL_HOST_USER = 'd0dcfa831eab18'
-EMAIL_HOST_PASSWORD = 'fc7b61f703a110'
+EMAIL_HOST = 'smtp.office365.com'
+EMAIL_PORT = 587  # Puerto para TLS
 EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'comunidad_conectada@outlook.com'  # Tu dirección de correo electrónico de Outlook
+EMAIL_HOST_PASSWORD = 'inegnropehnclxtm'  # Tu contraseña de aplicación de Outlook

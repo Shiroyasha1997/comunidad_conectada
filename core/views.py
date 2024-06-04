@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .forms import CustomPasswordChangeForm, IngresarForm, RegistroForm, PerfilForm
-from .models import SolicitudInscripcion, CustomUser
+from .models import SolicitudInscripcion, CustomUser, Certificado
 
 CustomUser = get_user_model()
 
@@ -99,7 +99,7 @@ def aprobar_solicitud(request, solicitud_id):
         # Enviar la contraseña por correo electrónico
         subject = 'Bienvenido a nuestra comunidad'
         message = f'Hola {solicitud.first_name}, tu solicitud ha sido aprobada.\n\nUsuario: {solicitud.username}\nContraseña: {password}'
-        from_email = 'dodor59478@ociun.com'  # Ingresa tu dirección de correo
+        from_email = 'comunidad_conectada@outlook.com'  # Ingresa tu dirección de correo
         to_email = [solicitud.email]
         send_mail(subject, message, from_email, to_email)
 
@@ -142,9 +142,9 @@ def rechazar_solicitud(request, solicitud_id):
 
         # Enviar un correo electrónico informando sobre el rechazo
         subject = 'Solicitud de registro rechazada'
-        message = f'Hola {solicitud.nombre_completo}, lamentamos informarte que tu solicitud de registro ha sido rechazada.'
-        from_email = 'dodor59478@ociun.com'  # Ingresa tu dirección de correo
-        to_email = [solicitud.correo]
+        message = f'Hola {solicitud.first_name}, lamentamos informarte que tu solicitud de registro ha sido rechazada.'
+        from_email = 'comunidad_conectada@outlook.com'  # Ingresa tu dirección de correo
+        to_email = [solicitud.email]
         send_mail(subject, message, from_email, to_email)
 
         # Eliminar la solicitud rechazada de la base de datos
@@ -195,46 +195,100 @@ def change_password(request):
 #-------------------------------------------------------------------------------------------------------------------
 #CERTIFICADOS
 #-------------------------------------------------------------------------------------------------------------------
-from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 @login_required
 def certificados(request):
-    return render(request, 'certificados.html')
+    certificados_usuario = Certificado.objects.filter(usuario=request.user)
+    return render(request, 'certificados.html', {'certificados_usuario': certificados_usuario})
 
 @login_required
-def generar_certificado_pdf(request):
-    # Crear la respuesta HTTP con el tipo de contenido PDF
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="certificado_residencia.pdf"'
-
-    # Crear el objeto canvas para generar el PDF
-    p = canvas.Canvas(response, pagesize=letter)
-    width, height = letter
-
-    # Datos del certificado
-    usuario = request.user
-    nombre_residente = usuario.get_full_name()
-    direccion = usuario.direccion  # Suponiendo que la dirección está en el perfil del usuario
-    fecha_emision = now().strftime('%d de %B de %Y')
-
-    # Dibujar el contenido del PDF
-    p.drawString(100, height - 100, "Certificado de Residencia")
-    p.drawString(100, height - 130, f"Nombre: {nombre_residente}")
-    p.drawString(100, height - 160, f"Dirección: {direccion}")
-    p.drawString(100, height - 190, f"Fecha de Emisión: {fecha_emision}")
-    p.drawString(100, height - 220, "Junta de Vecinos de Ejemplo")
-    p.drawString(100, height - 300, "El presente certificado se emite a solicitud del interesado,")
-    p.drawString(100, height - 320, "para los fines que estime conveniente.")
-    p.drawString(100, height - 400, "________________________")
-    p.drawString(100, height - 420, "Presidente de la Junta de Vecinos")
-
-    # Finalizar el PDF
-    p.showPage()
-    p.save()
-
+def descargar_certificado(request, certificado_id):
+    certificado = Certificado.objects.get(id=certificado_id, usuario=request.user)
+    response = generar_certificado_pdf(certificado)
+    response['Content-Disposition'] = 'attachment; filename="certificado_residencia.pdf"'
     return response
 
+def guardar_certificado(request):
+    # Obtener el usuario actual
+    user = request.user
+
+    # Crear un certificado para el usuario
+    certificado = Certificado(usuario=user, detalle="Certificado de Residencia")
+
+    # Generar el PDF del certificado
+    certificado_pdf = generar_certificado_pdf(certificado)
+
+
+    import uuid
+    # Asignar el PDF generado al campo pdf_certificado del certificado
+    nombre_archivo = f'certificado_residencia_{uuid.uuid4().hex[:6]}.pdf'
+    certificado.pdf_certificado.save(nombre_archivo, ContentFile(certificado_pdf.getvalue()))
+
+    # Guardar el certificado en la base de datos
+    certificado.save()
+
+def generar_certificado_pdf(certificado):
+    buffer = BytesIO()
+
+    # Crear el PDF del certificado
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+
+    # Definir estilos
+    titulo_style = styles["Heading1"]
+    titulo_style.alignment = 1
+    contenido_style = styles["BodyText"]
+    contenido_style.fontSize = 12
+    contenido_style.leading = 14
+
+    # Contenido del PDF
+    contenido = []
+
+    # Título del certificado
+    contenido.append(Paragraph("Certificado de Residencia", titulo_style))
+    contenido.append(Spacer(1, 12))
+
+    # Nombre del usuario
+    nombre_usuario = certificado.usuario.get_full_name()
+    contenido.append(Paragraph(f"Nombre: {nombre_usuario}", contenido_style))
+    contenido.append(Spacer(1, 12))
+
+    # Dirección del usuario (suponiendo que tienes este dato en el perfil del usuario)
+    direccion_usuario = certificado.usuario.direccion  # Ajusta esto según tu modelo
+    contenido.append(Paragraph(f"Dirección: {direccion_usuario}", contenido_style))
+    contenido.append(Spacer(1, 12))
+
+    # Declaración oficial
+    declaracion_text = (
+        "Este certificado de residencia es emitido para acreditar que el "
+        "señor(a) {nombre} reside en la dirección {direccion}, en la comuna de Santiago, "
+        "Chile. Este documento tiene validez oficial y ha sido emitido conforme a las leyes y "
+        "regulaciones vigentes en el país."
+    ).format(nombre=nombre_usuario, direccion=direccion_usuario)
+    contenido.append(Paragraph(declaracion_text, contenido_style))
+    contenido.append(Spacer(1, 12))
+
+    # Firma y sello (opcional)
+    contenido.append(Paragraph("Firma:", contenido_style))
+    contenido.append(Spacer(1, 48))
+    contenido.append(Paragraph("__________________________", contenido_style))
+    contenido.append(Paragraph("Firma Autorizada", contenido_style))
+    contenido.append(Spacer(1, 12))
+
+    contenido.append(Paragraph("Sello:", contenido_style))
+    contenido.append(Spacer(1, 48))
+    contenido.append(Paragraph("__________________________", contenido_style))
+    contenido.append(Paragraph("Sello Oficial", contenido_style))
+
+    # Construir el documento
+    doc.build(contenido)
+
+    # Devolver el contenido del PDF generado
+    buffer.seek(0)
+    return buffer
 
 #-------------------------------------------------------------------------------------------------------------------
 #API DE PAGO WEBPAY
@@ -246,32 +300,26 @@ from transbank.webpay.webpay_plus.transaction import Transaction
 @login_required
 def iniciar_pago(request):
     if request.method == 'POST':
-        # Generar el número de orden de compra (buy_order)
         buy_order = generar_buy_order()
-        
-        # Verificar la longitud del buy_order antes de continuar
         if len(buy_order) > 26:
             return HttpResponse("Error: 'buy_order' es demasiado largo.")
         
-        # Print para verificar la longitud y el valor del buy_order
-        print(f"Generated buy_order: {buy_order}, Length: {len(buy_order)}")
-        
         session_id = request.session.session_key
         amount = 1000  # Monto del pago en pesos chilenos
-        return_url = request.build_absolute_uri(reverse('pago_exitoso'))  # URL a la que redirigir después del pago
+        return_url = request.build_absolute_uri(reverse('procesar_pago'))
 
         try:
-            # Crear una transacción de Webpay
             tx = Transaction(webpay_options)
             response = tx.create(buy_order, session_id, amount, return_url)
         except Exception as e:
-            # Si hay un error, redirigir de nuevo a la página iniciar_pago.html con un parámetro de error
             return redirect(reverse('iniciar_pago') + '?error=1')
 
-        # Redirigir al usuario a la URL de Webpay
         return redirect(f"{response['url']}?token_ws={response['token']}")
     
     return render(request, 'iniciar_pago.html')
+
+from django.core.files.base import ContentFile
+from io import BytesIO
 
 @login_required
 def procesar_pago(request):
@@ -284,13 +332,25 @@ def procesar_pago(request):
         # Si hay un error, redirigir de nuevo a la página iniciar_pago.html con un parámetro de error
         return redirect(reverse('iniciar_pago') + '?error=1')
     
-    if response['status'] == 'AUTHORIZED':
-        # Si el pago es autorizado, redirigir a la página de éxito
+    status = response.get('status')
+    if status == 'AUTHORIZED':
+        # Si el pago es autorizado, procesar la compra del certificado
+        guardar_certificado(request)
+
+        # Redirigir a la página de éxito
         return redirect(reverse('pago_exitoso'))
+    elif status == 'REJECTED':
+        # Si el pago es rechazado, redirigir a la página de rechazo o iniciar_pago.html con un parámetro de error
+        return redirect(reverse('iniciar_pago') + '?error=1')
+    elif status == 'NULLIFIED':
+        # Si el pago es anulado, redirigir a la página de anulación o iniciar_pago.html con un parámetro de error
+        return redirect(reverse('iniciar_pago') + '?error=1')
     else:
-        # Si la transacción no fue autorizada, redirigir a iniciar_pago.html con un parámetro de error
+        # Otros estados posibles de la transacción
         return redirect(reverse('iniciar_pago') + '?error=1')
 
 @login_required
 def pago_exitoso(request):
-    return render(request, 'pago_exitoso.html')
+    return render(request, 'pago_exitoso.html', {
+        'options': ['Ver certificado', 'Descargar certificado', 'Enviar al correo']
+    })

@@ -6,9 +6,16 @@
 
 {% block content %}
 <div class="container">
-  <h1>Pago Exitoso</h1>
-  <p>Su pago se ha realizado con éxito. ¡Gracias por su compra!</p>
-  <a href="{% url 'generar_certificado_pdf' %}" class="btn btn-primary">Generar Certificado</a>
+  <h1 class="text-center mb-4">Pago Exitoso</h1>
+  <p class="lead text-center">Su pago se ha realizado con éxito. ¡Gracias por su compra!</p>
+  
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="text-center mb-3">
+        <a href="{% url 'descargar_certificado' %}" class="btn btn-secondary btn-block">Descargar Certificado</a>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
