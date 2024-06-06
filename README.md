@@ -24,7 +24,10 @@ Crear Superusuario en Django:
 ```bash
 python manage.py createsuperuser
 ```
-
+Instalar dependencias del proyecto: 
+```bash
+pip install -r requirements.txt
+```
 ## Instalación desde Cero
 
 Sigue estos pasos para configurar el entorno de desarrollo:
