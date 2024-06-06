@@ -41,3 +41,19 @@ class Certificado(models.Model):
 
     def __str__(self):
         return f'Certificado para {self.usuario.username}'
+
+class Publicacion(models.Model):
+    TIPO_CHOICES = [
+        ('noticia', 'Noticia'),
+        ('evento', 'Evento'),
+        ('anuncio', 'Anuncio'),
+    ]
+    
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
+    titulo = models.CharField(max_length=255)
+    detalle = models.TextField()
+    imagen = models.ImageField(upload_to='publicaciones/', blank=True, null=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.titulo

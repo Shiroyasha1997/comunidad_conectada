@@ -7,6 +7,11 @@ class IngresarForm(forms.Form):
     username = forms.CharField(max_length=100, label="Nombre de Usuario", widget=forms.TextInput(attrs={'class': 'form-control'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}), label="Contraseña")
 
+class DateInput(forms.DateInput):
+    input_type = 'date'
+
+from datetime import datetime, timedelta
+
 class RegistroForm(forms.ModelForm):
     class Meta:
         model = SolicitudInscripcion
@@ -22,20 +27,59 @@ class RegistroForm(forms.ModelForm):
             'fecha_nacimiento': 'Fecha de Nacimiento',
         }
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'run': forms.TextInput(attrs={'class': 'form-control'}),
-            'direccion': forms.TextInput(attrs={'class': 'form-control'}),
-            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
-            'fecha_nacimiento': DateInput(attrs={'class': 'form-control'}),
+            'username': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'run': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'fecha_nacimiento': DateInput(attrs={'class': 'form-control', 'required': 'required'}),
+        }
+        error_messages = {
+            'username': {
+                'unique': 'Este nombre de usuario ya está en uso. Por favor, elige otro.',
+            },
+            'run': {
+                'unique': 'Este RUN ya está registrado. Por favor, ingresa otro.',
+            },
+            'fecha_nacimiento': {
+                'min_age': 'Debes tener al menos 14 años para registrarte.',
+            }
         }
 
+    def __init__(self, *args, **kwargs):
+        super(RegistroForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].required = True
+
+    def clean_fecha_nacimiento(self):
+        fecha_nacimiento = self.cleaned_data.get('fecha_nacimiento')
+        edad_minima = datetime.now().date() - timedelta(days=14*365)  # Calcular fecha hace 14 años
+        if fecha_nacimiento > edad_minima:
+            raise forms.ValidationError(self.Meta.error_messages['fecha_nacimiento']['min_age'])
+        return fecha_nacimiento
+
+from django.contrib.auth.forms import UserChangeForm
+
 class PerfilForm(UserChangeForm):
+    def __init__(self, *args, **kwargs):
+        disable_email = kwargs.pop('disable_email', False)  # Obtener el valor de disable_email, si no se proporciona, será False por defecto
+        super().__init__(*args, **kwargs)
+        
+        # Remover el campo de contraseña
+        if 'password' in self.fields:
+            self.fields.pop('password')
+        for field in self.fields:
+            self.fields[field].required = True
+
+        # Deshabilitar el campo de correo electrónico si el usuario es un directivo
+        if disable_email:
+            self.fields['email'].widget.attrs['readonly'] = True
+
     class Meta(UserChangeForm.Meta):
         model = CustomUser
-        fields = ['username', 'first_name', 'last_name', 'email', 'run', 'direccion', 'telefono', 'fecha_nacimiento']
+        fields = ['username', 'first_name', 'last_name', 'email', 'run', 'direccion', 'telefono']
         labels = {
             'username': 'Nombre de Usuario',
             'first_name': 'Nombre',
@@ -44,7 +88,6 @@ class PerfilForm(UserChangeForm):
             'run': 'RUN',
             'direccion': 'Dirección',
             'telefono': 'Teléfono',
-            'fecha_nacimiento': 'Fecha de Nacimiento',
         }
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
@@ -54,16 +97,20 @@ class PerfilForm(UserChangeForm):
             'run': forms.TextInput(attrs={'class': 'form-control'}),
             'direccion': forms.TextInput(attrs={'class': 'form-control'}),
             'telefono': forms.TextInput(attrs={'class': 'form-control'}),
-            'fecha_nacimiento': DateInput(attrs={'class': 'form-control'}),
+        }
+        error_messages = {
+            'username': {
+                'unique': 'Este nombre de usuario ya está en uso. Por favor, elige otro.',
+            },
+            'run': {
+                'unique': 'Este RUN ya está en uso. Por favor, ingresa otro.',
+            }
         }
 
-    def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            if 'password' in self.fields:
-                self.fields.pop('password')  # Remover el campo de contraseña
-
     def clean_password(self):
-            return self.initial.get('password')
+        return self.initial.get('password')
+
+    
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     old_password = forms.CharField(
@@ -88,3 +135,10 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         self.fields['old_password'].widget.attrs.update({'class': 'form-control'})
         self.fields['new_password1'].widget.attrs.update({'class': 'form-control'})
         self.fields['new_password2'].widget.attrs.update({'class': 'form-control'})
+
+from .models import Publicacion
+
+class PublicacionForm(forms.ModelForm):
+    class Meta:
+        model = Publicacion
+        fields = ['tipo', 'titulo', 'detalle', 'imagen']

@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Publicaciones
+{% endblock title %}
+
+{% block content %}
+  <!-- Mensajes de éxito -->
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'success' and 'publicacion' in message.extra_tags %}
+        <div class="alert alert-success" role="alert">
+          {{ message }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <!-- Mensajes de error -->
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'error' and 'publicacion' in message.extra_tags %}
+        <div class="alert alert-danger" role="alert">
+          {{ message }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <h1>Lista de Publicaciones</h1>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Tipo</th>
+        <th>Título</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for publicacion in publicaciones %}
+      <tr>
+        <td>{{ publicacion.tipo }}</td>
+        <td>{{ publicacion.titulo }}</td>
+        <td>
+          <button type="button" class="btn btn-success" data-toggle="modal" data-target="#verPublicacionModal{{ publicacion.id }}">Ver</button>
+          <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#eliminarPublicacionModal{{ publicacion.id }}">Eliminar</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearPublicacionModal">
+    Crear Publicación
+  </button>
+
+  <!-- Modal para crear una nueva publicación -->
+  <div class="modal fade" id="crearPublicacionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Crear Nueva Publicación</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Crear</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para ver detalles de la publicación -->
+  {% for publicacion in publicaciones %}
+  <div class="modal fade" id="verPublicacionModal{{ publicacion.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">{{ publicacion.tipo }}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Título:</strong> {{ publicacion.titulo }}</p>
+          <p><strong>Detalle:</strong> {{ publicacion.detalle }}</p>
+          <img src="{{ publicacion.imagen.url }}" alt="Imagen de la publicación" style="max-width: 100%;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para eliminar publicación -->
+  <div class="modal fade" id="eliminarPublicacionModal{{ publicacion.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Eliminar Publicación</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que deseas eliminar esta publicación?</p>
+        </div>
+        <div class="modal-footer">
+          <form method="post" action="{% url 'eliminar_publicacion' publicacion.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="delete_publicacion" value="{{ publicacion.id }}">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+{% endblock content %}

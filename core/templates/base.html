@@ -1,13 +1,13 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %} {% endblock title %}</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  <!-- Enlace al CDN de Font Awesome -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
@@ -22,10 +22,11 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav mr-auto">
-        <li class="nav-item {% if request.path == '/' %}active{% endif %}">
-          <a class="nav-link" href="{% url 'inicio' %}">Inicio</a>
-        </li>
-        <!-- Agrega más elementos del menú aquí -->
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <span class="navbar-text text-white mr-3">Usuario: {{ user.first_name }} {{ user.last_name }}</span>
+          </li>
+        {% endif %}
       </ul>
       <ul class="navbar-nav ml-auto">
         {% if user.is_authenticated %}
@@ -36,6 +37,9 @@
           {% elif es_directivo %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'solicitudes' %}">Solicitudes</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'publicaciones' %}">Publicaciones</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'perfil' %}">Perfil</a>

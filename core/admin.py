@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser, SolicitudInscripcion, Certificado
+from .models import CustomUser, SolicitudInscripcion, Certificado, Publicacion
 
 CustomUser = get_user_model()
 
@@ -30,3 +30,10 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(SolicitudInscripcion)
 admin.site.register(Certificado)
+
+class PublicacionAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'tipo', 'fecha_creacion')
+    search_fields = ('titulo', 'detalle')
+    list_filter = ('tipo', 'fecha_creacion')
+
+admin.site.register(Publicacion, PublicacionAdmin)

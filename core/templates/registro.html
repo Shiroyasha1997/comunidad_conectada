@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block title %}
   Registro
 {% endblock title %}
 
 {% block content %}
-<div class="container mt-5 mb-5"> <!-- Agrega el margen inferior -->
+<div class="container mt-5 mb-5">
   <div class="row justify-content-center">
     <div class="col-md-8">
       <div class="card">
@@ -14,6 +13,15 @@
           <h4>Registro de Residente</h4>
         </div>
         <div class="card-body">
+          {% if messages %}
+            {% for message in messages %}
+              {% if 'registro' in message.tags %} <!-- Filtrar mensajes con la etiqueta 'registro' -->
+                <div class="alert {% if 'success' in message.tags %}alert-success{% elif 'error' in message.tags %}alert-danger{% else %}alert-info{% endif %}">
+                  {{ message }}
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
           <form method="POST">
             {% csrf_token %}
             {% for field in form %}

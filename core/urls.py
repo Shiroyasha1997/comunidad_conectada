@@ -24,4 +24,8 @@ urlpatterns = [
     path('iniciar_pago/', views.iniciar_pago, name='iniciar_pago'),
     path('procesar_pago/', views.procesar_pago, name='procesar_pago'),
     path('pago_exitoso/', views.pago_exitoso, name='pago_exitoso'),
+
+    # PUBLICACIONES
+    path('publicaciones/', views.publicaciones, name='publicaciones'),
+    path('eliminar_publicacion/<int:publicacion_id>/', views.eliminar_publicacion, name='eliminar_publicacion'),
 ]

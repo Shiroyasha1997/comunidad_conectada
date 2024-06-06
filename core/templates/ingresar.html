@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Iniciar sesión
+  Iniciar Sesión
 {% endblock title %}
 
 {% block content %}
@@ -10,9 +10,18 @@
     <div class="col-md-6">
       <div class="card">
         <div class="card-header text-center">
-          <h2>Iniciar sesión</h2>
+          <h2>Iniciar Sesión</h2>
         </div>
         <div class="card-body">
+          {% if messages %}
+            {% for message in messages %}
+              {% if 'ingresar_error' in message.tags %}  <!-- Filtrar mensajes con la etiqueta 'ingresar_error' -->
+                <div class="alert alert-danger">
+                  <p>{{ message }}</p>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
           <form method="POST">
             {% csrf_token %}
             <div class="form-group">
@@ -20,7 +29,9 @@
               {{ form.username }}
               {% if form.username.errors %}
                 <div class="invalid-feedback d-block">
-                  {{ form.username.errors }}
+                  {% for error in form.username.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
                 </div>
               {% endif %}
             </div>
@@ -29,7 +40,9 @@
               {{ form.password }}
               {% if form.password.errors %}
                 <div class="invalid-feedback d-block">
-                  {{ form.password.errors }}
+                  {% for error in form.password.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
                 </div>
               {% endif %}
             </div>

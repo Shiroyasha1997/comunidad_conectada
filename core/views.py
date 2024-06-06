@@ -10,9 +10,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib import messages
-from django.shortcuts import render, redirect
-from .forms import CustomPasswordChangeForm, IngresarForm, RegistroForm, PerfilForm
-from .models import SolicitudInscripcion, CustomUser, Certificado
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import CustomPasswordChangeForm, IngresarForm, RegistroForm, PerfilForm, PublicacionForm
+from .models import SolicitudInscripcion, CustomUser, Certificado, Publicacion
+from .decorators import residente_required, directivo_required
 
 CustomUser = get_user_model()
 
@@ -24,7 +25,6 @@ def inicio(request):
     es_directivo = request.user.groups.filter(name='Directivo').exists()
     es_residente = request.user.groups.filter(name='Residente').exists()
     return render(request, 'inicio.html', {'es_admin': es_admin, 'es_directivo': es_directivo, 'es_residente': es_residente})
-
 
 #-------------------------------------------------------------------------------------------------------------------
 #AUTENTICACION
@@ -40,45 +40,140 @@ def ingresar(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
 
-            # Intentar autenticar al usuario
             user = authenticate(request, username=username, password=password)
             if user is not None:
-                # Si el usuario es administrador de Django, redirigir al panel de administración
-                if user.is_staff:
+                if user.is_active:
                     login(request, user)
-                    return redirect('inicio')  # Redirigir al panel de administración de Django
-
-                # Si el usuario no es administrador, verificar los grupos
-                elif user.groups.filter(name='Directivo').exists():
-                    login(request, user)
-                    return redirect('inicio')  # Redirigir a la página de inicio de Directivos
-
-                elif user.groups.filter(name='Residente').exists():
-                    login(request, user)
-                    return redirect('inicio')  # Redirigir a la página de inicio de Residentes
-
-            # Si la autenticación falla, mostrar un mensaje de error
-            messages.error(request, "Nombre de usuario o contraseña incorrectos.")
+                    if user.is_staff:
+                        return redirect('inicio')
+                    elif user.groups.filter(name='Directivo').exists():
+                        return redirect('inicio')
+                    elif user.groups.filter(name='Residente').exists():
+                        return redirect('inicio')
+                    else:
+                        messages.error(request, "No tienes permiso para acceder a esta área.")
+                else:
+                    messages.error(request, "Esta cuenta está inactiva. Contacta al administrador.")
+            else:
+                if not CustomUser.objects.filter(username=username).exists():
+                    messages.error(request, "El nombre de usuario no existe.", extra_tags='ingresar_error')  # Agregar la etiqueta 'ingresar_error'
+                else:
+                    messages.error(request, "Contraseña incorrecta.", extra_tags='ingresar_error')  # Agregar la etiqueta 'ingresar_error'
     else:
         form = IngresarForm()
+    
     return render(request, 'ingresar.html', {'form': form})
+
+@login_required
+def perfil(request):
+    user = request.user
+    if request.method == 'POST':
+        form = PerfilForm(request.POST, instance=user)
+        if form.is_valid():
+            # Validación de nombre de usuario único en los usuarios registrados
+            username = form.cleaned_data['username']
+            if CustomUser.objects.filter(username=username).exclude(id=user.id).exists():
+                form.add_error('username', 'El nombre de usuario ya está en uso. Por favor, elige otro.')
+                messages.error(request, 'El nombre de usuario ya está en uso. Por favor, elige otro.', extra_tags='perfil')
+                return render(request, 'perfil.html', {'form': form, 'password_form': CustomPasswordChangeForm(user)})
+
+            # Validación de RUN único en las solicitudes de inscripción
+            run = form.cleaned_data['run']
+            if SolicitudInscripcion.objects.filter(run=run).exists():
+                form.add_error('run', 'El RUN ya está registrado. Por favor, ingresa otro.')
+                messages.error(request, 'El RUN ya está registrado. Por favor, ingresa otro.', extra_tags='perfil')
+                return render(request, 'perfil.html', {'form': form, 'password_form': CustomPasswordChangeForm(user)})
+
+            # Si todas las validaciones pasan, guarda el formulario
+            form.save()
+            messages.success(request, '¡Tu perfil ha sido actualizado!', extra_tags='perfil')
+            return redirect('perfil')
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.', extra_tags='perfil')
+    else:
+        # Verificar si el usuario es directivo para deshabilitar el campo de correo electrónico
+        if user.groups.filter(name='Directivo').exists():
+            form = PerfilForm(instance=user, disable_email=True)
+        else:
+            form = PerfilForm(instance=user)
+
+    password_form = CustomPasswordChangeForm(user)
+    return render(request, 'perfil.html', {'form': form, 'password_form': password_form})
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Importante para mantener al usuario autenticado
+            messages.success(request, '¡Tu contraseña ha sido actualizada!', extra_tags='perfil')
+            return redirect('perfil')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error, extra_tags='password_error')
+            return redirect('perfil')
+    else:
+        form = CustomPasswordChangeForm(request.user)
+    return render(request, 'change_password.html', {'form': form})
+
+from datetime import datetime, timedelta
 
 def registro(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
+            username = form.cleaned_data['username']
+            run = form.cleaned_data['run']
+            fecha_nacimiento = form.cleaned_data['fecha_nacimiento']
+            
+            # Validación de nombre de usuario único en los usuarios registrados
+            if CustomUser.objects.filter(username=username).exists():
+                form.add_error('username', 'El nombre de usuario ya está en uso. Por favor, elige otro.')
+                messages.error(request, 'El nombre de usuario ya está en uso. Por favor, elige otro.', extra_tags='registro')
+                return render(request, 'registro.html', {'form': form})
+
+            # Validación de nombre de usuario único en las solicitudes de inscripción
+            if SolicitudInscripcion.objects.filter(username=username).exists():
+                form.add_error('username', 'El nombre de usuario ya está en uso. Por favor, elige otro.')
+                messages.error(request, 'El nombre de usuario ya está en uso. Por favor, elige otro.', extra_tags='registro')
+                return render(request, 'registro.html', {'form': form})
+
+            # Validación de RUN único en los usuarios registrados
+            if CustomUser.objects.filter(run=run).exists():
+                form.add_error('run', 'El RUN ya está registrado. Por favor, ingresa otro.')
+                messages.error(request, 'El RUN ya está registrado. Por favor, ingresa otro.', extra_tags='registro')
+                return render(request, 'registro.html', {'form': form})
+
+            # Validación de RUN único en las solicitudes de inscripción
+            if SolicitudInscripcion.objects.filter(run=run).exists():
+                form.add_error('run', 'El RUN ya está registrado. Por favor, ingresa otro.')
+                messages.error(request, 'El RUN ya está registrado. Por favor, ingresa otro.', extra_tags='registro')
+                return render(request, 'registro.html', {'form': form})
+
+            # Validación de edad mínima (14 años)
+            edad_minima = datetime.now().date() - timedelta(days=14*365)  # Calcular fecha hace 14 años
+            if fecha_nacimiento > edad_minima:
+                form.add_error('fecha_nacimiento', 'Debes tener al menos 14 años para registrarte.')
+                messages.error(request, 'Debes tener al menos 14 años para registrarte.', extra_tags='registro')
+                return render(request, 'registro.html', {'form': form})
+
+            # Si todas las validaciones pasan, guarda el formulario
             solicitud = form.save(commit=False)
             solicitud.save()
 
-            messages.success(request, 'Tu solicitud de registro ha sido enviada. Espera la aprobación del directivo.')
-            return redirect('inicio')
+            messages.success(request, 'Tu solicitud de registro ha sido enviada. Espera la aprobación del directivo.', extra_tags='registro')
+            return redirect('registro')  # Redirigir a la página de registro nuevamente
         else:
-            messages.error(request, 'Hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo.')
+            messages.error(request, 'Hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo.', extra_tags='registro')
     else:
         form = RegistroForm()
+    
     return render(request, 'registro.html', {'form': form})
 
 @login_required
+@directivo_required
 def solicitudes(request):
     if request.user.groups.filter(name='Directivo').exists():
         solicitudes = SolicitudInscripcion.objects.all()
@@ -87,6 +182,7 @@ def solicitudes(request):
         return redirect('inicio')  # Redirigir a la página de inicio si el usuario no es un directivo
 
 @login_required
+@directivo_required
 def aprobar_solicitud(request, solicitud_id):
     if request.user.groups.filter(name='Directivo').exists():
         solicitud = SolicitudInscripcion.objects.get(id=solicitud_id)
@@ -111,6 +207,7 @@ def aprobar_solicitud(request, solicitud_id):
         nuevo_usuario = CustomUser.objects.create_user(
             username=solicitud.username,
             first_name=solicitud.first_name,
+            last_name=solicitud.last_name,
             email=solicitud.email,
             run=solicitud.run,
             direccion=solicitud.direccion,
@@ -130,9 +227,10 @@ def aprobar_solicitud(request, solicitud_id):
         return redirect('solicitudes')
     else:
         messages.error(request, "No tienes permisos para aprobar esta solicitud.")
-        return redirect('inicio')
+        return redirect('solicitudes')
 
 @login_required
+@directivo_required
 def rechazar_solicitud(request, solicitud_id):
     if request.user.groups.filter(name='Directivo').exists():
         solicitud = SolicitudInscripcion.objects.get(id=solicitud_id)
@@ -154,43 +252,7 @@ def rechazar_solicitud(request, solicitud_id):
         return redirect('solicitudes')
     else:
         messages.error(request, "No tienes permisos para rechazar esta solicitud.")
-        return redirect('inicio')
-
-@login_required
-def perfil(request):
-    user = request.user
-    if request.method == 'POST':
-        form = PerfilForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, '¡Tu perfil ha sido actualizado!')
-            return redirect('perfil')
-        else:
-            messages.error(request, 'Por favor corrige los errores en el formulario.')
-    else:
-        form = PerfilForm(instance=user)
-    
-    password_form = CustomPasswordChangeForm(user)
-    return render(request, 'perfil.html', {'form': form, 'password_form': password_form})
-
-@login_required
-def change_password(request):
-    if request.method == 'POST':
-        form = CustomPasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Importante para mantener al usuario autenticado
-            messages.success(request, '¡Tu contraseña ha sido actualizada!')
-            return redirect('perfil')
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, error, extra_tags='password_error')
-            return redirect('perfil')
-    else:
-        form = CustomPasswordChangeForm(request.user)
-    return render(request, 'change_password.html', {'form': form})
-
+        return redirect('solicitudes')
 
 #-------------------------------------------------------------------------------------------------------------------
 #CERTIFICADOS
@@ -200,15 +262,26 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
 @login_required
+@residente_required
 def certificados(request):
     certificados_usuario = Certificado.objects.filter(usuario=request.user)
     return render(request, 'certificados.html', {'certificados_usuario': certificados_usuario})
 
+
+import uuid
+
 @login_required
-def descargar_certificado(request, certificado_id):
-    certificado = Certificado.objects.get(id=certificado_id, usuario=request.user)
-    response = generar_certificado_pdf(certificado)
-    response['Content-Disposition'] = 'attachment; filename="certificado_residencia.pdf"'
+@residente_required
+def descargar_certificado(request):
+    # Obtener el último certificado del usuario
+    certificado = Certificado.objects.filter(usuario=request.user).order_by('-fecha_compra').first()
+    
+    if not certificado or not certificado.pdf_certificado:
+        return HttpResponse("No se encontró un certificado disponible para descargar.", status=404)
+
+    # Preparar la respuesta con el archivo PDF
+    response = HttpResponse(certificado.pdf_certificado.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="certificado_residencia_{uuid.uuid4().hex[:6]}.pdf"'
     return response
 
 def guardar_certificado(request):
@@ -221,8 +294,6 @@ def guardar_certificado(request):
     # Generar el PDF del certificado
     certificado_pdf = generar_certificado_pdf(certificado)
 
-
-    import uuid
     # Asignar el PDF generado al campo pdf_certificado del certificado
     nombre_archivo = f'certificado_residencia_{uuid.uuid4().hex[:6]}.pdf'
     certificado.pdf_certificado.save(nombre_archivo, ContentFile(certificado_pdf.getvalue()))
@@ -271,17 +342,12 @@ def generar_certificado_pdf(certificado):
     contenido.append(Paragraph(declaracion_text, contenido_style))
     contenido.append(Spacer(1, 12))
 
-    # Firma y sello (opcional)
+    # Firma
     contenido.append(Paragraph("Firma:", contenido_style))
     contenido.append(Spacer(1, 48))
     contenido.append(Paragraph("__________________________", contenido_style))
     contenido.append(Paragraph("Firma Autorizada", contenido_style))
     contenido.append(Spacer(1, 12))
-
-    contenido.append(Paragraph("Sello:", contenido_style))
-    contenido.append(Spacer(1, 48))
-    contenido.append(Paragraph("__________________________", contenido_style))
-    contenido.append(Paragraph("Sello Oficial", contenido_style))
 
     # Construir el documento
     doc.build(contenido)
@@ -298,6 +364,7 @@ from .webpay_config import webpay_options, generar_buy_order
 from transbank.webpay.webpay_plus.transaction import Transaction
 
 @login_required
+@residente_required
 def iniciar_pago(request):
     if request.method == 'POST':
         buy_order = generar_buy_order()
@@ -350,7 +417,57 @@ def procesar_pago(request):
         return redirect(reverse('iniciar_pago') + '?error=1')
 
 @login_required
+@residente_required
 def pago_exitoso(request):
     return render(request, 'pago_exitoso.html', {
         'options': ['Ver certificado', 'Descargar certificado', 'Enviar al correo']
     })
+
+
+#-------------------------------------------------------------------------------------------------------------------
+#PUBLICACIONESS
+#-------------------------------------------------------------------------------------------------------------------
+@login_required
+@directivo_required
+def publicaciones(request):
+
+    # Obtener todas las publicaciones
+    publicaciones = Publicacion.objects.all()
+
+    # Si se envía un formulario para crear una nueva publicación
+    if request.method == 'POST':
+        form = PublicacionForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('publicaciones')
+    else:
+        # Si es una solicitud GET o no se envió un formulario válido
+        form = PublicacionForm()
+
+    return render(request, 'publicaciones.html', {'publicaciones': publicaciones, 'form': form})
+
+import os
+
+@login_required
+@directivo_required
+def eliminar_publicacion(request, publicacion_id):
+    publicacion = get_object_or_404(Publicacion, pk=publicacion_id)
+
+    if request.method == 'POST' and 'delete_publicacion' in request.POST:
+        # Eliminar la imagen asociada
+        if publicacion.imagen:
+            imagen_path = publicacion.imagen.path
+            if os.path.exists(imagen_path):
+                os.remove(imagen_path)
+
+        # Eliminar la publicación
+        publicacion.delete()
+
+        # Agregar un mensaje de éxito
+        messages.success(request, 'La publicación se eliminó correctamente.', extra_tags='publicacion')
+    else:
+        # Agregar un mensaje de error
+        messages.error(request, 'Se produjo un error al intentar eliminar la publicación.', extra_tags='publicacion')
+
+    # Redirigir a la página de publicaciones
+    return redirect('publicaciones')
