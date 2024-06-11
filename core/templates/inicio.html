@@ -6,6 +6,21 @@
 {% endblock title %}
 
 {% block content %}
+<style>
+  /* Establecer un tamaño fijo para las cards */
+  .card {
+    height: 600px; /* Puedes ajustar este valor según tus necesidades */
+    padding: 10px;
+  }
+  
+  /* Establecer un tamaño fijo para las imágenes dentro de las cards y adaptarlas */
+  .card-img-top {
+    width: 100%;
+    height: 200px; /* Ajusta este valor según tus necesidades */
+    object-fit: contain;
+  }
+</style>
+
 <div class="container-fluid p-0">
   <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" style="max-width: 800px; margin: 0 auto;">
     <ol class="carousel-indicators">
@@ -58,5 +73,77 @@
     <h3 class="mt-3 text-center">Bienvenido</h3>
   {% endif %}
 {% endif %}
+
+<!-- Sección de Publicaciones -->
+<div class="container-fluid">
+  <div class="row">
+    
+    <!-- Carrusel de Noticias -->
+    <div class="col-md-4">
+      <h2 class="text-center">Noticias</h2>
+      <div id="noticiasCarousel" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+          {% for noticia in noticias %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <div class="card mb-4">
+                {% if noticia.imagen %}
+                  <img src="{{ noticia.imagen.url }}" class="card-img-top" alt="{{ noticia.titulo }}">
+                {% endif %}
+                <div class="card-body">
+                  <h5 class="card-title">{{ noticia.titulo }}</h5>
+                  <p class="card-text">{{ noticia.detalle }}</p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Carrusel de Eventos -->
+    <div class="col-md-4">
+      <h2 class="text-center">Eventos</h2>
+      <div id="eventosCarousel" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+          {% for evento in eventos %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <div class="card mb-4">
+                {% if evento.imagen %}
+                  <img src="{{ evento.imagen.url }}" class="card-img-top" alt="{{ evento.titulo }}">
+                {% endif %}
+                <div class="card-body">
+                  <h5 class="card-title">{{ evento.titulo }}</h5>
+                  <p class="card-text">{{ evento.detalle }}</p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Carrusel de Anuncios -->
+    <div class="col-md-4">
+      <h2 class="text-center">Anuncios</h2>
+      <div id="anunciosCarousel" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+          {% for anuncio in anuncios %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <div class="card mb-4">
+                {% if anuncio.imagen %}
+                  <img src="{{ anuncio.imagen.url }}" class="card-img-top" alt="{{ anuncio.titulo }}">
+                {% endif %}
+                <div class="card-body">
+                  <h5 class="card-title">{{ anuncio.titulo }}</h5>
+                  <p class="card-text">{{ anuncio.detalle }}</p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock content %}

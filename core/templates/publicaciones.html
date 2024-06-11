@@ -5,22 +5,12 @@
 {% endblock title %}
 
 {% block content %}
-  <!-- Mensajes de éxito -->
-  {% if messages %}
-    {% for message in messages %}
-      {% if message.tags == 'success' and 'publicacion' in message.extra_tags %}
-        <div class="alert alert-success" role="alert">
-          {{ message }}
-        </div>
-      {% endif %}
-    {% endfor %}
-  {% endif %}
 
-  <!-- Mensajes de error -->
+  <!-- Filtrar mensajes con la etiqueta 'publicacion' -->
   {% if messages %}
     {% for message in messages %}
-      {% if message.tags == 'error' and 'publicacion' in message.extra_tags %}
-        <div class="alert alert-danger" role="alert">
+      {% if 'publicacion' in message.tags %}
+        <div class="alert {% if 'success' in message.tags %}alert-success{% elif 'error' in message.tags %}alert-danger{% else %}alert-info{% endif %}">
           {{ message }}
         </div>
       {% endif %}
@@ -33,14 +23,16 @@
       <tr>
         <th>Tipo</th>
         <th>Título</th>
+        <th>Fecha de Creación</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
       {% for publicacion in publicaciones %}
       <tr>
-        <td>{{ publicacion.tipo }}</td>
+        <td>{{ publicacion.tipo|capfirst }}</td>
         <td>{{ publicacion.titulo }}</td>
+        <td>{{ publicacion.fecha_creacion }}</td>
         <td>
           <button type="button" class="btn btn-success" data-toggle="modal" data-target="#verPublicacionModal{{ publicacion.id }}">Ver</button>
           <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#eliminarPublicacionModal{{ publicacion.id }}">Eliminar</button>
@@ -49,6 +41,7 @@
       {% endfor %}
     </tbody>
   </table>
+
   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearPublicacionModal">
     Crear Publicación
   </button>
@@ -66,7 +59,26 @@
         <div class="modal-body">
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form.as_p }}
+            <div class="form-group">
+                {{ form.tipo.label_tag }}
+                {{ form.tipo }}
+            </div>
+            <div class="form-group">
+                {{ form.titulo.label_tag }}
+                {{ form.titulo }}
+                <small class="form-text text-muted">Título: Máximo 60 caracteres.</small>
+                <small id="tituloCounter" class="form-text text-muted">0 / 60</small>
+            </div>
+            <div class="form-group">
+                {{ form.detalle.label_tag }}
+                {{ form.detalle }}
+                <small class="form-text text-muted">Detalle: Máximo 350 caracteres.</small>
+                <small id="detalleCounter" class="form-text text-muted">0 / 350</small>
+            </div>
+            <div class="form-group">
+                {{ form.imagen.label_tag }}
+                {{ form.imagen }}
+            </div>
             <button type="submit" class="btn btn-primary">Crear</button>
           </form>
         </div>
@@ -80,7 +92,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">{{ publicacion.tipo }}</h5>
+          <h5 class="modal-title" id="exampleModalLabel">{{ publicacion.tipo|capfirst }}</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -88,13 +100,19 @@
         <div class="modal-body">
           <p><strong>Título:</strong> {{ publicacion.titulo }}</p>
           <p><strong>Detalle:</strong> {{ publicacion.detalle }}</p>
-          <img src="{{ publicacion.imagen.url }}" alt="Imagen de la publicación" style="max-width: 100%;">
+          {% if publicacion.imagen %}
+            <img src="{{ publicacion.imagen.url }}" alt="Imagen de la publicación" style="max-width: 100%;">
+          {% else %}
+            <p><em>No hay imagen disponible para esta publicación.</em></p>
+          {% endif %}
         </div>
       </div>
     </div>
   </div>
+  {% endfor %}
 
   <!-- Modal para eliminar publicación -->
+  {% for publicacion in publicaciones %}
   <div class="modal fade" id="eliminarPublicacionModal{{ publicacion.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -119,4 +137,30 @@
     </div>
   </div>
   {% endfor %}
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var tituloInput = document.querySelector('input[name="titulo"]');
+      var detalleInput = document.querySelector('textarea[name="detalle"]');
+      var tituloCounter = document.getElementById("tituloCounter");
+      var detalleCounter = document.getElementById("detalleCounter");
+
+      tituloInput.addEventListener("input", function() {
+        var length = tituloInput.value.length;
+        if (length > 60) {
+          tituloInput.value = tituloInput.value.substring(0, 60);
+        }
+        tituloCounter.textContent = tituloInput.value.length + " / 60";
+      });
+
+      detalleInput.addEventListener("input", function() {
+        var length = detalleInput.value.length;
+        if (length > 350) {
+          detalleInput.value = detalleInput.value.substring(0, 350);
+        }
+        detalleCounter.textContent = detalleInput.value.length + " / 350";
+      });
+    });
+  </script>
+
 {% endblock content %}

@@ -13,15 +13,18 @@
           <h4>Mis Datos</h4>
         </div>
         <div class="card-body">
+          
+          <!-- Filtrar mensajes con la etiqueta 'perfil' -->
           {% if messages %}
             {% for message in messages %}
-              {% if 'perfil' in message.tags %}  <!-- Filtrar mensajes con la etiqueta 'perfil' -->
+              {% if 'perfil' in message.tags %}
                 <div class="alert {% if 'success' in message.tags %}alert-success{% elif 'error' in message.tags %}alert-danger{% else %}alert-info{% endif %}">
                   {{ message }}
                 </div>
               {% endif %}
             {% endfor %}
           {% endif %}
+
           <form method="POST">
             {% csrf_token %}
             {% for field in form %}

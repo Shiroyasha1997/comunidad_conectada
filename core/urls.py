@@ -28,4 +28,7 @@ urlpatterns = [
     # PUBLICACIONES
     path('publicaciones/', views.publicaciones, name='publicaciones'),
     path('eliminar_publicacion/<int:publicacion_id>/', views.eliminar_publicacion, name='eliminar_publicacion'),
+
+    # PROYECTOS
+    
 ]

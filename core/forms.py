@@ -137,8 +137,61 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         self.fields['new_password2'].widget.attrs.update({'class': 'form-control'})
 
 from .models import Publicacion
+from django.core.validators import MaxLengthValidator
 
 class PublicacionForm(forms.ModelForm):
     class Meta:
         model = Publicacion
         fields = ['tipo', 'titulo', 'detalle', 'imagen']
+        widgets = {
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'titulo': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '60'}),
+            'detalle': forms.Textarea(attrs={'class': 'form-control', 'maxlength': '350'}),
+            'imagen': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(PublicacionForm, self).__init__(*args, **kwargs)
+        self.fields['tipo'].required = True
+        self.fields['titulo'].required = True
+        self.fields['detalle'].required = True
+        self.fields['imagen'].required = False
+        self.fields['titulo'].validators.append(MaxLengthValidator(60))
+        self.fields['detalle'].validators.append(MaxLengthValidator(350))
+
+
+from .models import Proyecto, Postulacion
+
+class ProyectoForm(forms.ModelForm):
+    class Meta:
+        model = Proyecto
+        fields = ['nombre', 'descripcion', 'presupuesto', 'cupos', 'disponible']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '100'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': '4', 'maxlength': '500'}),
+            'presupuesto': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'cupos': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'disponible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ProyectoForm, self).__init__(*args, **kwargs)
+        self.fields['nombre'].required = True
+        self.fields['descripcion'].required = True
+        self.fields['presupuesto'].required = True
+        self.fields['cupos'].required = True
+        self.fields['nombre'].validators.append(MaxLengthValidator(100))
+        self.fields['descripcion'].validators.append(MaxLengthValidator(500))
+
+class PostulacionForm(forms.ModelForm):
+    class Meta:
+        model = Postulacion
+        fields = ['detalle']
+        widgets = {
+            'detalle': forms.Textarea(attrs={'class': 'form-control', 'rows': '4', 'maxlength': '500'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(PostulacionForm, self).__init__(*args, **kwargs)
+        self.fields['detalle'].required = True
+        self.fields['detalle'].validators.append(MaxLengthValidator(500))

@@ -13,15 +13,18 @@
           <h2>Iniciar Sesión</h2>
         </div>
         <div class="card-body">
+          
+          <!-- Filtrar mensajes con la etiqueta 'ingresar_error' -->
           {% if messages %}
             {% for message in messages %}
-              {% if 'ingresar_error' in message.tags %}  <!-- Filtrar mensajes con la etiqueta 'ingresar_error' -->
+              {% if 'ingresar_error' in message.tags %}
                 <div class="alert alert-danger">
                   <p>{{ message }}</p>
                 </div>
               {% endif %}
             {% endfor %}
           {% endif %}
+
           <form method="POST">
             {% csrf_token %}
             <div class="form-group">

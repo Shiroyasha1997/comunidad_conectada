@@ -20,11 +20,25 @@ CustomUser = get_user_model()
 #-------------------------------------------------------------------------------------------------------------------
 #PAGINA DE INICIO
 #-------------------------------------------------------------------------------------------------------------------
+
 def inicio(request):
     es_admin = request.user.is_staff
     es_directivo = request.user.groups.filter(name='Directivo').exists()
     es_residente = request.user.groups.filter(name='Residente').exists()
-    return render(request, 'inicio.html', {'es_admin': es_admin, 'es_directivo': es_directivo, 'es_residente': es_residente})
+
+    # Obtener publicaciones por categoría
+    noticias = Publicacion.objects.filter(tipo='noticia').order_by('-fecha_creacion')
+    eventos = Publicacion.objects.filter(tipo='evento').order_by('-fecha_creacion')
+    anuncios = Publicacion.objects.filter(tipo='anuncio').order_by('-fecha_creacion')
+
+    return render(request, 'inicio.html', {
+        'es_admin': es_admin,
+        'es_directivo': es_directivo,
+        'es_residente': es_residente,
+        'noticias': noticias,
+        'eventos': eventos,
+        'anuncios': anuncios,
+    })
 
 #-------------------------------------------------------------------------------------------------------------------
 #AUTENTICACION
@@ -423,9 +437,8 @@ def pago_exitoso(request):
         'options': ['Ver certificado', 'Descargar certificado', 'Enviar al correo']
     })
 
-
 #-------------------------------------------------------------------------------------------------------------------
-#PUBLICACIONESS
+#PUBLICACIONES
 #-------------------------------------------------------------------------------------------------------------------
 @login_required
 @directivo_required
@@ -471,3 +484,8 @@ def eliminar_publicacion(request, publicacion_id):
 
     # Redirigir a la página de publicaciones
     return redirect('publicaciones')
+
+
+#-------------------------------------------------------------------------------------------------------------------
+#PROYECTOS
+#-------------------------------------------------------------------------------------------------------------------
