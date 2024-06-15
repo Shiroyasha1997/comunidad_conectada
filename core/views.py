@@ -1,6 +1,6 @@
 import random
 import string
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils import timezone
 from django.utils.timezone import now
 from django.core.mail import send_mail
@@ -459,6 +459,23 @@ def publicaciones(request):
 
     return render(request, 'publicaciones.html', {'publicaciones': publicaciones, 'form': form})
 
+@login_required
+@directivo_required
+def editar_publicacion(request, publicacion_id):
+    publicacion = get_object_or_404(Publicacion, id=publicacion_id)
+    if request.method == 'POST':
+        form = PublicacionForm(request.POST, request.FILES, instance=publicacion)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Publicación editada con éxito', extra_tags='publicacion')
+            return redirect('publicaciones')
+    else:
+        form = PublicacionForm(instance=publicacion)
+    
+    publicaciones = Publicacion.objects.all()
+    return render(request, 'publicaciones.html', {'publicaciones': publicaciones, 'form': form, 'edit_publicacion_id': publicacion.id})
+
+
 import os
 
 @login_required
@@ -489,3 +506,85 @@ def eliminar_publicacion(request, publicacion_id):
 #-------------------------------------------------------------------------------------------------------------------
 #PROYECTOS
 #-------------------------------------------------------------------------------------------------------------------
+from .models import Proyecto, Postulacion
+from .forms import ProyectoForm, PostulacionForm
+
+@login_required
+def proyectos_postular(request):
+    proyectos = Proyecto.objects.filter(disponible=True).order_by('-fecha_creacion')
+    postulaciones_usuario = Postulacion.objects.filter(usuario=request.user)
+    proyectos_postulados = postulaciones_usuario.values_list('proyecto_id', flat=True)
+
+    if request.method == 'POST':
+        proyecto_id = request.POST.get('proyecto_id')
+        proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+        form = PostulacionForm(request.POST)
+        if form.is_valid():
+            postulacion = form.save(commit=False)
+            postulacion.usuario = request.user
+            postulacion.proyecto = proyecto
+            postulacion.save()
+            return redirect('proyectos_postular')
+    else:
+        form = PostulacionForm()
+
+    return render(request, 'proyectos_postular.html', {
+        'proyectos': proyectos,
+        'form': form,
+        'proyectos_postulados': proyectos_postulados
+    })
+
+@login_required
+def proyectos(request):
+    proyectos = Proyecto.objects.all()
+    form = ProyectoForm()  # Se crea una instancia del formulario ProyectoForm
+    return render(request, 'proyectos.html', {'proyectos': proyectos, 'form': form})  # Se pasa 'form' al contexto
+
+@login_required
+def crear_proyecto(request):
+    if request.method == 'POST':
+        form = ProyectoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Proyecto creado con éxito', extra_tags='proyectos')
+            return redirect('proyectos')
+    else:
+        form = ProyectoForm()
+    return render(request, 'proyectos.html', {'proyectos': proyectos, 'form': form})
+
+@login_required
+def editar_proyecto(request, proyecto_id):
+    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+    if request.method == 'POST':
+        form = ProyectoForm(request.POST, instance=proyecto)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Proyecto editado con éxito', extra_tags='proyectos')
+            return redirect('proyectos')
+    else:
+        form = ProyectoForm(instance=proyecto)
+    return render(request, 'proyectos.html', {'proyectos': proyectos, 'form': form})
+
+@login_required
+def eliminar_proyecto(request, proyecto_id):
+    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+    if request.method == 'POST' and 'delete_proyecto' in request.POST:
+        proyecto.delete()
+        messages.success(request, 'El proyecto se eliminó correctamente.', extra_tags='proyectos')
+    else:
+        messages.error(request, 'Se produjo un error al intentar eliminar el proyecto.', extra_tags='proyectos')
+    return redirect('proyectos')
+
+@login_required
+def cambiar_estado_postulacion(request, id):
+    postulacion = get_object_or_404(Postulacion, id=id)
+    if request.method == 'POST':
+        estado = request.POST.get('estado')
+        if estado == 'rechazado':
+            postulacion.delete()
+            messages.success(request, 'Postulación rechazada y eliminada con éxito', extra_tags='proyectos')
+        else:
+            postulacion.estado = estado
+            postulacion.save()
+            messages.success(request, f'Postulación {estado} con éxito', extra_tags='proyectos')
+    return redirect('proyectos')

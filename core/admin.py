@@ -37,3 +37,5 @@ class PublicacionAdmin(admin.ModelAdmin):
     list_filter = ('tipo', 'fecha_creacion')
 
 admin.site.register(Publicacion, PublicacionAdmin)
+admin.site.register(Proyecto)
+admin.site.register(Postulacion)

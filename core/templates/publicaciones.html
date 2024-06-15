@@ -5,7 +5,6 @@
 {% endblock title %}
 
 {% block content %}
-
   <!-- Filtrar mensajes con la etiqueta 'publicacion' -->
   {% if messages %}
     {% for message in messages %}
@@ -35,6 +34,7 @@
         <td>{{ publicacion.fecha_creacion }}</td>
         <td>
           <button type="button" class="btn btn-success" data-toggle="modal" data-target="#verPublicacionModal{{ publicacion.id }}">Ver</button>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editarPublicacionModal{{ publicacion.id }}">Editar</button>
           <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#eliminarPublicacionModal{{ publicacion.id }}">Eliminar</button>
         </td>
       </tr>
@@ -60,24 +60,24 @@
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
-                {{ form.tipo.label_tag }}
-                {{ form.tipo }}
+              {{ form.tipo.label_tag }}
+              {{ form.tipo }}
             </div>
             <div class="form-group">
-                {{ form.titulo.label_tag }}
-                {{ form.titulo }}
-                <small class="form-text text-muted">Título: Máximo 60 caracteres.</small>
-                <small id="tituloCounter" class="form-text text-muted">0 / 60</small>
+              {{ form.titulo.label_tag }}
+              {{ form.titulo }}
+              <small class="form-text text-muted">Título: Máximo 60 caracteres.</small>
+              <small id="tituloCounter" class="form-text text-muted">0 / 60</small>
             </div>
             <div class="form-group">
-                {{ form.detalle.label_tag }}
-                {{ form.detalle }}
-                <small class="form-text text-muted">Detalle: Máximo 350 caracteres.</small>
-                <small id="detalleCounter" class="form-text text-muted">0 / 350</small>
+              {{ form.detalle.label_tag }}
+              {{ form.detalle }}
+              <small class="form-text text-muted">Detalle: Máximo 350 caracteres.</small>
+              <small id="detalleCounter" class="form-text text-muted">0 / 350</small>
             </div>
             <div class="form-group">
-                {{ form.imagen.label_tag }}
-                {{ form.imagen }}
+              {{ form.imagen.label_tag }}
+              {{ form.imagen }}
             </div>
             <button type="submit" class="btn btn-primary">Crear</button>
           </form>
@@ -105,6 +105,55 @@
           {% else %}
             <p><em>No hay imagen disponible para esta publicación.</em></p>
           {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- Modal para editar publicación -->
+  {% for publicacion in publicaciones %}
+  <div class="modal fade" id="editarPublicacionModal{{ publicacion.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Editar Publicación: {{ publicacion.titulo }}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form method="post" action="{% url 'editar_publicacion' publicacion.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="id_tipo">Tipo:</label>
+              <select id="id_tipo" name="tipo" class="form-control" required>
+                <option value="anuncio" {% if publicacion.tipo == "anuncio" %}selected{% endif %}>Anuncio</option>
+                <option value="evento" {% if publicacion.tipo == "evento" %}selected{% endif %}>Evento</option>
+                <!-- Añade más opciones si es necesario -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="id_titulo">Título:</label>
+              <input type="text" id="id_titulo" name="titulo" value="{{ publicacion.titulo }}" class="form-control" maxlength="60" required>
+              <small class="form-text text-muted">Título: Máximo 60 caracteres.</small>
+              <small id="tituloCounter{{ publicacion.id }}" class="form-text text-muted">{{ publicacion.titulo|length }} / 60</small>
+            </div>
+            <div class="form-group">
+              <label for="id_detalle">Detalle:</label>
+              <textarea id="id_detalle" name="detalle" class="form-control" rows="4" maxlength="350" required>{{ publicacion.detalle }}</textarea>
+              <small class="form-text text-muted">Detalle: Máximo 350 caracteres.</small>
+              <small id="detalleCounter{{ publicacion.id }}" class="form-text text-muted">{{ publicacion.detalle|length }} / 350</small>
+            </div>
+            <div class="form-group">
+              <label for="id_imagen">Imagen:</label>
+              <input type="file" id="id_imagen" name="imagen" class="form-control-file">
+              {% if publicacion.imagen %}
+                <img src="{{ publicacion.imagen.url }}" alt="Imagen de la publicación" style="max-width: 100%;">
+              {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+          </form>
         </div>
       </div>
     </div>
@@ -140,25 +189,31 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-      var tituloInput = document.querySelector('input[name="titulo"]');
-      var detalleInput = document.querySelector('textarea[name="detalle"]');
-      var tituloCounter = document.getElementById("tituloCounter");
-      var detalleCounter = document.getElementById("detalleCounter");
+      var tituloInputs = document.querySelectorAll('input[name="titulo"]');
+      var detalleInputs = document.querySelectorAll('textarea[name="detalle"]');
 
-      tituloInput.addEventListener("input", function() {
-        var length = tituloInput.value.length;
-        if (length > 60) {
-          tituloInput.value = tituloInput.value.substring(0, 60);
-        }
-        tituloCounter.textContent = tituloInput.value.length + " / 60";
+      tituloInputs.forEach(function(input) {
+        var counterId = "tituloCounter" + input.closest(".modal").id.replace("editarPublicacionModal", "");
+        var counter = document.getElementById(counterId);
+        input.addEventListener("input", function() {
+          var length = input.value.length;
+          if (length > 60) {
+            input.value = input.value.substring(0, 60);
+          }
+          counter.textContent = input.value.length + " / 60";
+        });
       });
 
-      detalleInput.addEventListener("input", function() {
-        var length = detalleInput.value.length;
-        if (length > 350) {
-          detalleInput.value = detalleInput.value.substring(0, 350);
-        }
-        detalleCounter.textContent = detalleInput.value.length + " / 350";
+      detalleInputs.forEach(function(input) {
+        var counterId = "detalleCounter" + input.closest(".modal").id.replace("editarPublicacionModal", "");
+        var counter = document.getElementById(counterId);
+        input.addEventListener("input", function() {
+          var length = input.value.length;
+          if (length > 350) {
+            input.value = input.value.substring(0, 350);
+          }
+          counter.textContent = input.value.length + " / 350";
+        });
       });
     });
   </script>

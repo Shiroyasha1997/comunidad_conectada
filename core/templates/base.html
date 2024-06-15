@@ -39,6 +39,9 @@
               <a class="nav-link" href="{% url 'solicitudes' %}">Solicitudes</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" href="{% url 'proyectos' %}">Proyectos</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="{% url 'publicaciones' %}">Publicaciones</a>
             </li>
             <li class="nav-item">
@@ -47,6 +50,9 @@
           {% elif es_residente %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'certificados' %}">Certificados</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'proyectos_postular' %}">Proyectos</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'perfil' %}">Perfil</a>

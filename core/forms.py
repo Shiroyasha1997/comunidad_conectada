@@ -160,6 +160,8 @@ class PublicacionForm(forms.ModelForm):
         self.fields['detalle'].validators.append(MaxLengthValidator(350))
 
 
+from django import forms
+from django.core.validators import MaxLengthValidator
 from .models import Proyecto, Postulacion
 
 class ProyectoForm(forms.ModelForm):
@@ -168,7 +170,7 @@ class ProyectoForm(forms.ModelForm):
         fields = ['nombre', 'descripcion', 'presupuesto', 'cupos', 'disponible']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '100'}),
-            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': '4', 'maxlength': '500'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'maxlength': '500'}),
             'presupuesto': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'cupos': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'disponible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -183,12 +185,13 @@ class ProyectoForm(forms.ModelForm):
         self.fields['nombre'].validators.append(MaxLengthValidator(100))
         self.fields['descripcion'].validators.append(MaxLengthValidator(500))
 
+
 class PostulacionForm(forms.ModelForm):
     class Meta:
         model = Postulacion
         fields = ['detalle']
         widgets = {
-            'detalle': forms.Textarea(attrs={'class': 'form-control', 'rows': '4', 'maxlength': '500'}),
+            'detalle': forms.Textarea(attrs={'class': 'form-control', 'maxlength': '500'}),
         }
 
     def __init__(self, *args, **kwargs):

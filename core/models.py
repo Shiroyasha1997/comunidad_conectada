@@ -58,6 +58,10 @@ class Publicacion(models.Model):
     def __str__(self):
         return self.titulo
 
+
+from django.db import models
+from django.conf import settings
+
 class Proyecto(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
@@ -70,10 +74,17 @@ class Proyecto(models.Model):
         return self.nombre
 
 class Postulacion(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('aprobada', 'Aprobada'),
+        ('rechazada', 'Rechazada'),
+    ]
+
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, related_name='postulaciones')
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     detalle = models.TextField()
     fecha_postulacion = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='pendiente')
 
     def __str__(self):
         return f'{self.usuario.username} - {self.proyecto.nombre}'
