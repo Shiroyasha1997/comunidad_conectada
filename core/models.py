@@ -88,3 +88,27 @@ class Postulacion(models.Model):
 
     def __str__(self):
         return f'{self.usuario.username} - {self.proyecto.nombre}'
+
+
+
+
+
+class Espacio(models.Model):
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField()
+    dias_disponibles = models.CharField(max_length=200)  # Esto puede ser un campo CharField para simplicidad, se puede mejorar con un campo JSONField si se necesita.
+    horario_inicio = models.TimeField()
+    horario_fin = models.TimeField()
+
+    def __str__(self):
+        return self.nombre
+
+
+class Reserva(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    hora_reserva = models.TimeField()
+    dia_reserva = models.DateField()
+    espacio = models.ForeignKey(Espacio, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Reserva de {self.usuario.get_full_name()} en {self.espacio.nombre} el {self.dia_reserva} a las {self.hora_reserva}'

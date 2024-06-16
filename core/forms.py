@@ -198,3 +198,29 @@ class PostulacionForm(forms.ModelForm):
         super(PostulacionForm, self).__init__(*args, **kwargs)
         self.fields['detalle'].required = True
         self.fields['detalle'].validators.append(MaxLengthValidator(500))
+
+from django import forms
+from .models import Espacio, Reserva
+
+class EspacioForm(forms.ModelForm):
+    class Meta:
+        model = Espacio
+        fields = ['nombre', 'descripcion', 'dias_disponibles', 'horario_inicio', 'horario_fin']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'dias_disponibles': forms.TextInput(attrs={'class': 'form-control'}),
+            'horario_inicio': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'horario_fin': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+        }
+
+
+class ReservaForm(forms.ModelForm):
+    class Meta:
+        model = Reserva
+        fields = ['hora_reserva', 'dia_reserva', 'espacio']
+        widgets = {
+            'hora_reserva': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'dia_reserva': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'espacio': forms.Select(attrs={'class': 'form-control'}),
+        }

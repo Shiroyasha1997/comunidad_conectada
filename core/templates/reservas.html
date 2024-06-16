@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Reservas
+{% endblock title %}
+
+{% block content %}
+    <div class="container">
+        <div class="card mt-4">
+            <div class="card-header text-center">
+                <h4>Reservas</h4>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-info">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Selector de Espacios -->
+                <div class="form-group">
+                    <label for="espacioSelector">Selecciona un Espacio:</label>
+                    <select id="espacioSelector" class="form-control">
+                        <option value="">Seleccione un espacio</option>
+                        {% for espacio in espacios %}
+                            <option value="{{ espacio.id }}" data-horario-inicio="{{ espacio.horario_inicio }}" data-horario-fin="{{ espacio.horario_fin }}">{{ espacio.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear una nueva reserva -->
+    <div class="modal fade" id="crearReservaModal" tabindex="-1" role="dialog" aria-labelledby="crearReservaLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="crearReservaLabel">Crear Nueva Reserva</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="crearReservaForm" method="post" action="{% url 'crear_reserva' %}">
+                        {% csrf_token %}
+                        <input type="hidden" id="dia_reserva" name="dia_reserva">
+                        <input type="hidden" id="espacio" name="espacio">
+                        <div class="form-group">
+                            <label for="hora_reserva">Hora de Reserva:</label>
+                            <select id="hora_reserva" name="hora_reserva" class="form-control" required>
+                                <option value="">Seleccione una hora</option>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Crear Reserva</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Archivo de localización en español de FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.es.js"></script>
+
+    <script>
+        function populateHoraReserva(horarioInicio, horarioFin) {
+            var horaReserva = document.getElementById('hora_reserva');
+            horaReserva.innerHTML = ''; // Clear previous options
+
+            var option = document.createElement('option');
+            option.value = '';
+            option.text = 'Seleccione una hora';
+            horaReserva.appendChild(option);
+
+            var start = new Date("1970-01-01T" + horarioInicio + "Z");
+            var end = new Date("1970-01-01T" + horarioFin + "Z");
+
+            while (start < end) {
+                var option = document.createElement('option');
+                option.value = start.toTimeString().substring(0, 5);
+                option.text = start.toTimeString().substring(0, 5);
+                horaReserva.appendChild(option);
+
+                start.setHours(start.getHours() + 1);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'es', // Configurar el calendario en español
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                },
+                selectable: true,
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    var espacioId = document.getElementById('espacioSelector').value;
+                    var url = '{% url "cargar_eventos" %}?espacio_id=' + espacioId;
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => successCallback(data));
+                },
+                select: function(info) {
+                    var espacioSelector = document.getElementById('espacioSelector');
+                    var selectedOption = espacioSelector.options[espacioSelector.selectedIndex];
+                    var horarioInicio = selectedOption.getAttribute('data-horario-inicio');
+                    var horarioFin = selectedOption.getAttribute('data-horario-fin');
+
+                    $('#crearReservaModal').modal('show');
+                    document.getElementById('crearReservaForm').reset();
+                    populateHoraReserva(horarioInicio, horarioFin);
+                    document.getElementById('dia_reserva').value = info.startStr;
+                    document.getElementById('espacio').value = espacioSelector.value;
+                },
+                eventClick: function(info) {
+                    if (confirm("¿Estás seguro que deseas eliminar esta reserva?")) {
+                        $.ajax({
+                            url: '{% url "eliminar_reserva" 0 %}'.replace('0', info.event.id),
+                            type: 'DELETE',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            success: function() {
+                                info.event.remove();
+                                alert('Reserva eliminada exitosamente.');
+                            }
+                        });
+                    }
+                },
+                // Configuración para mostrar los días de lunes a domingo
+                weekText: 'Semana',
+                weekNumberCalculation: 'ISO'
+            });
+
+            document.getElementById('espacioSelector').addEventListener('change', function() {
+                calendar.refetchEvents();
+            });
+
+            calendar.render();
+        });
+
+        $('#crearReservaModal').on('hidden.bs.modal', function () {
+            $(this).find('form')[0].reset();
+        });
+    </script>
+{% endblock content %}

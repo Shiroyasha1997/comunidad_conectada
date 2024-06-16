@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser, SolicitudInscripcion, Certificado, Publicacion, Proyecto, Postulacion
+from .models import CustomUser, SolicitudInscripcion, Certificado, Publicacion, Proyecto, Postulacion, Reserva, Espacio
 
 CustomUser = get_user_model()
 
@@ -39,3 +39,5 @@ class PublicacionAdmin(admin.ModelAdmin):
 admin.site.register(Publicacion, PublicacionAdmin)
 admin.site.register(Proyecto)
 admin.site.register(Postulacion)
+admin.site.register(Reserva)
+admin.site.register(Espacio)

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Gestionar Espacios
+{% endblock title %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="card shadow-sm">
+            <div class="card-header text-center bg-primary text-white">
+                <h4>Gestionar Espacios</h4>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-info">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Crear Espacio Form -->
+                <div class="mb-4">
+                    <h5 class="mb-3">Crear Espacio</h5>
+                    <form method="post" action="{% url 'gestionar_espacios' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_nombre">Nombre</label>
+                            <input type="text" id="id_nombre" name="nombre" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_descripcion">Descripción</label>
+                            <textarea id="id_descripcion" name="descripcion" class="form-control" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_dias_disponibles">Días Disponibles</label>
+                            <input type="text" id="id_dias_disponibles" name="dias_disponibles" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="horario_inicio">Horario de Inicio</label>
+                            <select id="horario_inicio" name="horario_inicio" class="form-control" required>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="horario_fin">Horario de Fin</label>
+                            <select id="horario_fin" name="horario_fin" class="form-control" required>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Crear Espacio</button>
+                    </form>
+                </div>
+
+                <hr>
+
+                <!-- Lista de Espacios Existentes -->
+                <div>
+                    <h5 class="mb-3">Espacios Existentes</h5>
+                    <div class="list-group">
+                        {% for espacio in espacios %}
+                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ espacio.nombre }}</h6>
+                                    <small>{{ espacio.descripcion }}</small>
+                                    <p class="mb-0"><strong>Días Disponibles:</strong> {{ espacio.dias_disponibles }}</p>
+                                    <p class="mb-0"><strong>Horario:</strong> {{ espacio.horario_inicio }} - {{ espacio.horario_fin }}</p>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editarEspacioModal" data-id="{{ espacio.id }}" data-nombre="{{ espacio.nombre }}" data-descripcion="{{ espacio.descripcion }}" data-dias="{{ espacio.dias_disponibles }}" data-inicio="{{ espacio.horario_inicio }}" data-fin="{{ espacio.horario_fin }}">Editar</button>
+                                    <form method="post" action="{% url 'eliminar_espacio' espacio.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Espacio -->
+    <div class="modal fade" id="editarEspacioModal" tabindex="-1" role="dialog" aria-labelledby="editarEspacioLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarEspacioLabel">Editar Espacio</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editarEspacioForm" method="post" action="{% url 'editar_espacio' %}">
+                        {% csrf_token %}
+                        <input type="hidden" id="editar_espacio_id" name="espacio_id">
+                        <div class="form-group">
+                            <label for="editar_nombre">Nombre</label>
+                            <input type="text" id="editar_nombre" name="nombre" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editar_descripcion">Descripción</label>
+                            <textarea id="editar_descripcion" name="descripcion" class="form-control" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editar_dias_disponibles">Días Disponibles</label>
+                            <input type="text" id="editar_dias_disponibles" name="dias_disponibles" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editar_horario_inicio">Horario de Inicio</label>
+                            <select id="editar_horario_inicio" name="horario_inicio" class="form-control" required>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editar_horario_fin">Horario de Fin</label>
+                            <select id="editar_horario_fin" name="horario_fin" class="form-control" required>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Guardar Cambios</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function populateHourSelect(id) {
+                var select = document.getElementById(id);
+                select.innerHTML = ''; // Clear previous options
+                for (var i = 0; i < 24; i++) {
+                    var hour = i.toString().padStart(2, '0') + ':00';
+                    var option = document.createElement('option');
+                    option.value = hour;
+                    option.text = hour;
+                    select.appendChild(option);
+                }
+            }
+
+            populateHourSelect('horario_inicio');
+            populateHourSelect('horario_fin');
+            populateHourSelect('editar_horario_inicio');
+            populateHourSelect('editar_horario_fin');
+
+            $('#editarEspacioModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var id = button.data('id');
+                var nombre = button.data('nombre');
+                var descripcion = button.data('descripcion');
+                var dias = button.data('dias');
+                var inicio = button.data('inicio');
+                var fin = button.data('fin');
+
+                var modal = $(this);
+                modal.find('#editar_espacio_id').val(id);
+                modal.find('#editar_nombre').val(nombre);
+                modal.find('#editar_descripcion').val(descripcion);
+                modal.find('#editar_dias_disponibles').val(dias);
+                modal.find('#editar_horario_inicio').val(inicio);
+                modal.find('#editar_horario_fin').val(fin);
+            });
+        });
+    </script>
+{% endblock content %}

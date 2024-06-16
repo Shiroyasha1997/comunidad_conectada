@@ -31,23 +31,21 @@ urlpatterns = [
     path('editar_publicacion/<int:publicacion_id>/', views.editar_publicacion, name='editar_publicacion'),
 
     # PROYECTOS
-
-    # Vista para mostrar todos los proyectos y crear nuevos
     path('proyectos_postular/', views.proyectos_postular, name='proyectos_postular'),
-
-    # Vista para mostrar todos los proyectos y crear nuevos
     path('proyectos/', views.proyectos, name='proyectos'),
-    
-    # Vista para procesar la creación de un nuevo proyecto
     path('crear_proyecto/', views.crear_proyecto, name='crear_proyecto'),
-    
-    # Vista para editar un proyecto existente
     path('editar_proyecto/<int:proyecto_id>/', views.editar_proyecto, name='editar_proyecto'),
-
-    # Vista para eliminar un proyecto existente
     path('eliminar_proyecto/<int:proyecto_id>/', views.eliminar_proyecto, name='eliminar_proyecto'),
-    
-    # Vista para cambiar el estado de una postulación
     path('cambiar_estado_postulacion/<int:id>/', views.cambiar_estado_postulacion, name='cambiar_estado_postulacion'),
+
+    #RESERVA
+    path('reservas/', views.reservas, name='reservas'),
+    path('crear_reserva/', views.crear_reserva, name='crear_reserva'),
+    path('cargar_eventos/', views.cargar_eventos, name='cargar_eventos'),
+    path('eliminar_reserva/<int:reserva_id>/', views.eliminar_reserva, name='eliminar_reserva'),
+
+    path('gestionar_espacios/', views.gestionar_espacios, name='gestionar_espacios'),
+    path('editar_espacio/', views.editar_espacio, name='editar_espacio'),
+    path('eliminar_espacio/<int:espacio_id>/', views.eliminar_espacio, name='eliminar_espacio'),
 
 ]

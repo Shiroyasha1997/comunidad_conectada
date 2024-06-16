@@ -42,6 +42,9 @@
               <a class="nav-link" href="{% url 'proyectos' %}">Proyectos</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" href="{% url 'gestionar_espacios' %}">Espacios</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="{% url 'publicaciones' %}">Publicaciones</a>
             </li>
             <li class="nav-item">
@@ -50,6 +53,9 @@
           {% elif es_residente %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'certificados' %}">Certificados</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'reservas' %}">Reservar</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'proyectos_postular' %}">Proyectos</a>
@@ -79,9 +85,13 @@
   {% endblock content %}
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<!-- Scripts al final del cuerpo para asegurar carga completa -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- FULL CALENDAR -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.14/index.global.min.js"></script>
 
 </body>
 </html>

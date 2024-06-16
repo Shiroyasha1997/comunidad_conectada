@@ -588,3 +588,87 @@ def cambiar_estado_postulacion(request, id):
             postulacion.save()
             messages.success(request, f'Postulación {estado} con éxito', extra_tags='proyectos')
     return redirect('proyectos')
+
+
+#-------------------------------------------------------------------------------------------------------------------
+#RESERVAS
+#-------------------------------------------------------------------------------------------------------------------
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Reserva, Espacio
+from .forms import ReservaForm, EspacioForm
+from django.http import JsonResponse
+
+# Vista combinada para crear y ver espacios
+def gestionar_espacios(request):
+    if request.method == 'POST':
+        form = EspacioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Espacio creado exitosamente.')
+            return redirect('gestionar_espacios')
+    else:
+        form = EspacioForm()
+
+    espacios = Espacio.objects.all()
+    return render(request, 'gestionar_espacios.html', {'form': form, 'espacios': espacios})
+
+# Vista para editar espacio
+def editar_espacio(request):
+    if request.method == 'POST':
+        espacio_id = request.POST['espacio_id']
+        espacio = get_object_or_404(Espacio, id=espacio_id)
+        form = EspacioForm(request.POST, instance=espacio)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Espacio editado exitosamente.')
+            return redirect('gestionar_espacios')
+
+# Vista para eliminar espacio
+def eliminar_espacio(request, espacio_id):
+    espacio = get_object_or_404(Espacio, id=espacio_id)
+    espacio.delete()
+    messages.success(request, 'Espacio eliminado exitosamente.')
+    return redirect('gestionar_espacios')
+
+
+
+# Vistas para Reserva
+def crear_reserva(request):
+    if request.method == 'POST':
+        form = ReservaForm(request.POST)
+        if form.is_valid():
+            reserva = form.save(commit=False)
+            reserva.usuario = request.user
+            reserva.save()
+            messages.success(request, 'Reserva creada exitosamente.')
+            return redirect('reservas')
+    else:
+        form = ReservaForm()
+    return render(request, 'reservas.html', {'form': form})
+
+def reservas(request):
+    reservas = Reserva.objects.all()
+    espacios = Espacio.objects.all()
+    return render(request, 'reservas.html', {'reservas': reservas, 'espacios': espacios})
+
+def eliminar_reserva(request, reserva_id):
+    reserva = Reserva.objects.get(id=reserva_id)
+    if reserva:
+        reserva.delete()
+        messages.success(request, 'Reserva eliminada exitosamente.')
+    return redirect('reservas')
+
+def cargar_eventos(request):
+    espacio_id = request.GET.get('espacio_id')
+    eventos = []
+    if espacio_id:
+        reservas = Reserva.objects.filter(espacio_id=espacio_id)
+        for reserva in reservas:
+            eventos.append({
+                'title': f'Reserva de {reserva.usuario.get_full_name()}',
+                'start': reserva.dia_reserva.isoformat(),
+                'end': reserva.dia_reserva.isoformat(),
+                'id': reserva.id,
+            })
+    return JsonResponse(eventos, safe=False)
