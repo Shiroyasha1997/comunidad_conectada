@@ -64,18 +64,20 @@ from django.contrib.auth.forms import UserChangeForm
 
 class PerfilForm(UserChangeForm):
     def __init__(self, *args, **kwargs):
-        disable_email = kwargs.pop('disable_email', False)  # Obtener el valor de disable_email, si no se proporciona, será False por defecto
+        disable_email = kwargs.pop('disable_email', False)
+        disable_username = kwargs.pop('disable_username', False)  # Nuevo parámetro para deshabilitar username
         super().__init__(*args, **kwargs)
         
-        # Remover el campo de contraseña
         if 'password' in self.fields:
             self.fields.pop('password')
         for field in self.fields:
             self.fields[field].required = True
 
-        # Deshabilitar el campo de correo electrónico si el usuario es un directivo
         if disable_email:
             self.fields['email'].widget.attrs['readonly'] = True
+        
+        if disable_username:
+            self.fields['username'].widget.attrs['readonly'] = True  # Deshabilitar el campo de username
 
     class Meta(UserChangeForm.Meta):
         model = CustomUser
@@ -109,8 +111,6 @@ class PerfilForm(UserChangeForm):
 
     def clean_password(self):
         return self.initial.get('password')
-
-    
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     old_password = forms.CharField(

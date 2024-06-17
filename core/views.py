@@ -84,30 +84,26 @@ def perfil(request):
     if request.method == 'POST':
         form = PerfilForm(request.POST, instance=user)
         if form.is_valid():
-            # Validación de nombre de usuario único en los usuarios registrados
             username = form.cleaned_data['username']
             if CustomUser.objects.filter(username=username).exclude(id=user.id).exists():
                 form.add_error('username', 'El nombre de usuario ya está en uso. Por favor, elige otro.')
                 messages.error(request, 'El nombre de usuario ya está en uso. Por favor, elige otro.', extra_tags='perfil')
                 return render(request, 'perfil.html', {'form': form, 'password_form': CustomPasswordChangeForm(user)})
 
-            # Validación de RUN único en las solicitudes de inscripción
             run = form.cleaned_data['run']
             if SolicitudInscripcion.objects.filter(run=run).exists():
                 form.add_error('run', 'El RUN ya está registrado. Por favor, ingresa otro.')
                 messages.error(request, 'El RUN ya está registrado. Por favor, ingresa otro.', extra_tags='perfil')
                 return render(request, 'perfil.html', {'form': form, 'password_form': CustomPasswordChangeForm(user)})
 
-            # Si todas las validaciones pasan, guarda el formulario
             form.save()
             messages.success(request, '¡Tu perfil ha sido actualizado!', extra_tags='perfil')
             return redirect('perfil')
         else:
             messages.error(request, 'Por favor corrige los errores en el formulario.', extra_tags='perfil')
     else:
-        # Verificar si el usuario es directivo para deshabilitar el campo de correo electrónico
         if user.groups.filter(name='Directivo').exists():
-            form = PerfilForm(instance=user, disable_email=True)
+            form = PerfilForm(instance=user, disable_email=True, disable_username=True)  # Pasar disable_username=True
         else:
             form = PerfilForm(instance=user)
 
@@ -120,7 +116,7 @@ def change_password(request):
         form = CustomPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)  # Importante para mantener al usuario autenticado
+            update_session_auth_hash(request, user)
             messages.success(request, '¡Tu contraseña ha sido actualizada!', extra_tags='perfil')
             return redirect('perfil')
         else:
@@ -506,6 +502,9 @@ def eliminar_publicacion(request, publicacion_id):
 #-------------------------------------------------------------------------------------------------------------------
 #PROYECTOS
 #-------------------------------------------------------------------------------------------------------------------
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .models import Proyecto, Postulacion
 from .forms import ProyectoForm, PostulacionForm
 
@@ -524,7 +523,17 @@ def proyectos_postular(request):
             postulacion.usuario = request.user
             postulacion.proyecto = proyecto
             postulacion.save()
+            
+            # Reducir el número de cupos disponibles
+            proyecto.cupos -= 1
+            if proyecto.cupos <= 0:
+                proyecto.disponible = False
+            proyecto.save()
+
+            messages.success(request, 'Te has postulado al proyecto con éxito.', extra_tags='proyectos')
             return redirect('proyectos_postular')
+        else:
+            messages.error(request, 'Hubo un error con tu postulación.', extra_tags='proyectos')
     else:
         form = PostulacionForm()
 
@@ -578,10 +587,19 @@ def eliminar_proyecto(request, proyecto_id):
 @login_required
 def cambiar_estado_postulacion(request, id):
     postulacion = get_object_or_404(Postulacion, id=id)
+    proyecto = postulacion.proyecto
     if request.method == 'POST':
         estado = request.POST.get('estado')
         if estado == 'rechazado':
+            # Eliminar la postulación
             postulacion.delete()
+            
+            # Incrementar el número de cupos disponibles
+            proyecto.cupos += 1
+            if proyecto.cupos > 0:
+                proyecto.disponible = True
+            proyecto.save()
+            
             messages.success(request, 'Postulación rechazada y eliminada con éxito', extra_tags='proyectos')
         else:
             postulacion.estado = estado

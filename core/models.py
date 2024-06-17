@@ -58,8 +58,9 @@ class Publicacion(models.Model):
     def __str__(self):
         return self.titulo
 
-
-from django.db import models
+#-------------------------------------------------------------------------------------------------------------------
+#PROYECTOS
+#-------------------------------------------------------------------------------------------------------------------
 from django.conf import settings
 
 class Proyecto(models.Model):
@@ -89,20 +90,18 @@ class Postulacion(models.Model):
     def __str__(self):
         return f'{self.usuario.username} - {self.proyecto.nombre}'
 
-
-
-
-
+#-------------------------------------------------------------------------------------------------------------------
+#RESERVAS
+#-------------------------------------------------------------------------------------------------------------------
 class Espacio(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
-    dias_disponibles = models.CharField(max_length=200)  # Esto puede ser un campo CharField para simplicidad, se puede mejorar con un campo JSONField si se necesita.
+    dias_disponibles = models.CharField(max_length=200)
     horario_inicio = models.TimeField()
     horario_fin = models.TimeField()
 
     def __str__(self):
         return self.nombre
-
 
 class Reserva(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
