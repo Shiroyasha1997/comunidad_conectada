@@ -136,6 +136,10 @@ class CustomPasswordChangeForm(PasswordChangeForm):
         self.fields['new_password1'].widget.attrs.update({'class': 'form-control'})
         self.fields['new_password2'].widget.attrs.update({'class': 'form-control'})
 
+
+#-------------------------------------------------------------------------------------------------------------------
+#PUBLICACIONES
+#-------------------------------------------------------------------------------------------------------------------
 from .models import Publicacion
 from django.core.validators import MaxLengthValidator
 
@@ -160,9 +164,12 @@ class PublicacionForm(forms.ModelForm):
         self.fields['detalle'].validators.append(MaxLengthValidator(350))
 
 
-from django import forms
+#-------------------------------------------------------------------------------------------------------------------
+#PROYECTOS
+#-------------------------------------------------------------------------------------------------------------------
 from django.core.validators import MaxLengthValidator
 from .models import Proyecto, Postulacion
+from djmoney.forms.widgets import MoneyWidget
 
 class ProyectoForm(forms.ModelForm):
     class Meta:
@@ -171,7 +178,7 @@ class ProyectoForm(forms.ModelForm):
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '100'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'maxlength': '500'}),
-            'presupuesto': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'presupuesto': MoneyWidget(attrs={'class': 'form-control'}),
             'cupos': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'disponible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
@@ -184,7 +191,6 @@ class ProyectoForm(forms.ModelForm):
         self.fields['cupos'].required = True
         self.fields['nombre'].validators.append(MaxLengthValidator(100))
         self.fields['descripcion'].validators.append(MaxLengthValidator(500))
-
 
 class PostulacionForm(forms.ModelForm):
     class Meta:
@@ -199,6 +205,10 @@ class PostulacionForm(forms.ModelForm):
         self.fields['detalle'].required = True
         self.fields['detalle'].validators.append(MaxLengthValidator(500))
 
+
+#-------------------------------------------------------------------------------------------------------------------
+#RESERVAS
+#-------------------------------------------------------------------------------------------------------------------
 from django import forms
 from .models import Espacio, Reserva
 

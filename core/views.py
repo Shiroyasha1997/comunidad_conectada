@@ -559,7 +559,7 @@ def crear_proyecto(request):
             return redirect('proyectos')
     else:
         form = ProyectoForm()
-    return render(request, 'proyectos.html', {'proyectos': proyectos, 'form': form})
+    return render(request, 'proyectos.html', {'proyectos': Proyecto.objects.all(), 'form': form})
 
 @login_required
 def editar_proyecto(request, proyecto_id):
@@ -572,7 +572,9 @@ def editar_proyecto(request, proyecto_id):
             return redirect('proyectos')
     else:
         form = ProyectoForm(instance=proyecto)
-    return render(request, 'proyectos.html', {'proyectos': proyectos, 'form': form})
+    
+    proyectos = Proyecto.objects.all()  # Obtener todos los proyectos
+    return render(request, 'proyectos.html', {'proyectos': proyectos, 'form': form, 'edit_proyecto_id': proyecto.id})
 
 @login_required
 def eliminar_proyecto(request, proyecto_id):
@@ -606,7 +608,6 @@ def cambiar_estado_postulacion(request, id):
             postulacion.save()
             messages.success(request, f'Postulación {estado} con éxito', extra_tags='proyectos')
     return redirect('proyectos')
-
 
 #-------------------------------------------------------------------------------------------------------------------
 #RESERVAS

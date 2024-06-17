@@ -199,8 +199,8 @@
                         </div>
                         <!-- Presupuesto -->
                         <div class="form-group">
-                            <label for="id_presupuesto">Presupuesto:</label>
-                            <input type="number" id="id_presupuesto" name="presupuesto" value="{{ proyecto.presupuesto }}" class="form-control" step="0.01" required>
+                            {{ form.presupuesto.label_tag }}
+                            {{ form.presupuesto }}
                         </div>
                         <!-- Cupos -->
                         <div class="form-group">
