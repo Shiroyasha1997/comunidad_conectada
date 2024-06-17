@@ -646,9 +646,21 @@ def crear_reserva(request):
     return render(request, 'reservas.html', {'form': form})
 
 def reservas(request):
-    reservas = Reserva.objects.all()
+    reservas = Reserva.objects.filter(usuario=request.user)
+    reservas_con_espacio = []
+
+    for reserva in reservas:
+        espacio = Espacio.objects.get(id=reserva.espacio_id)
+        reservas_con_espacio.append({
+            'reserva': reserva,
+            'espacio_nombre': espacio.nombre
+        })
+
     espacios = Espacio.objects.all()
-    return render(request, 'reservas.html', {'reservas': reservas, 'espacios': espacios})
+    return render(request, 'reservas.html', {
+        'reservas_con_espacio': reservas_con_espacio,
+        'espacios': espacios
+    })
 
 def eliminar_reserva(request, reserva_id):
     reserva = Reserva.objects.get(id=reserva_id)
@@ -657,10 +669,7 @@ def eliminar_reserva(request, reserva_id):
         messages.success(request, 'Reserva eliminada exitosamente.')
     return redirect('reservas')
 
-
 from datetime import datetime, timedelta
-from django.http import JsonResponse
-from .models import Reserva
 
 def cargar_eventos(request):
     espacio_id = request.GET.get('espacio_id')
@@ -673,7 +682,7 @@ def cargar_eventos(request):
             hora_inicio = reserva.hora_reserva
             hora_fin = (datetime.combine(datetime.today(), hora_inicio) + timedelta(hours=1)).time()
             eventos.append({
-                'title': f'Hora reservada: {hora_inicio.strftime("%H:%M")}',
+                'title': f'{hora_inicio.strftime("%H:%M")}',
                 'start': f"{reserva.dia_reserva}T{hora_inicio.strftime('%H:%M')}",
                 'id': reserva.id,
             })
