@@ -29,6 +29,21 @@
                 </div>
 
                 <div id="calendar"></div>
+
+                <!-- Sección para mostrar las reservas del usuario -->
+                <div class="mt-4">
+                    <h5>Mis Reservas</h5>
+                    <ul id="misReservas" class="list-group">
+                        {% for reserva in reservas %}
+                            {% if reserva.usuario == request.user %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ reserva.dia_reserva }} - {{ reserva.hora_reserva }}
+                                    <button class="btn btn-danger btn-sm" onclick="eliminarReserva({{ reserva.id }})">Eliminar</button>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -62,11 +77,8 @@
         </div>
     </div>
 
-    <!-- Archivo de localización en español de FullCalendar -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.es.js"></script>
-
     <script>
-        function populateHoraReserva(horarioInicio, horarioFin) {
+        function populateHoraReserva(horarioInicio, horarioFin, horasReservadas) {
             var horaReserva = document.getElementById('hora_reserva');
             horaReserva.innerHTML = ''; // Clear previous options
 
@@ -75,16 +87,32 @@
             option.text = 'Seleccione una hora';
             horaReserva.appendChild(option);
 
-            var start = new Date("1970-01-01T" + horarioInicio + "Z");
-            var end = new Date("1970-01-01T" + horarioFin + "Z");
+            var startHour = parseInt(horarioInicio.substring(0, 2));
+            var endHour = parseInt(horarioFin.substring(0, 2)) + 1; // Incluir la última hora completa
 
-            while (start < end) {
-                var option = document.createElement('option');
-                option.value = start.toTimeString().substring(0, 5);
-                option.text = start.toTimeString().substring(0, 5);
-                horaReserva.appendChild(option);
+            for (var hour = startHour; hour < endHour; hour++) {
+                var hourString = hour.toString().padStart(2, '0') + ":00";
+                if (!horasReservadas.includes(hourString)) {
+                    var option = document.createElement('option');
+                    option.value = hourString;
+                    option.text = hourString;
+                    horaReserva.appendChild(option);
+                }
+            }
+        }
 
-                start.setHours(start.getHours() + 1);
+        function eliminarReserva(reservaId) {
+            if (confirm("¿Estás seguro que deseas eliminar esta reserva?")) {
+                $.ajax({
+                    url: '{% url "eliminar_reserva" 0 %}'.replace('0', reservaId),
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function() {
+                        location.reload(); // Refresh the page to reflect the changes
+                    }
+                });
             }
         }
 
@@ -114,26 +142,20 @@
 
                     $('#crearReservaModal').modal('show');
                     document.getElementById('crearReservaForm').reset();
-                    populateHoraReserva(horarioInicio, horarioFin);
+
+                    // Fetch existing reservations for the selected day and space
+                    fetch('{% url "cargar_eventos" %}?espacio_id=' + espacioSelector.value + '&dia=' + info.startStr)
+                        .then(response => response.json())
+                        .then(data => {
+                            var horasReservadas = data.map(evento => evento.start.substring(11, 16)); // Only extract the hour part
+                            populateHoraReserva(horarioInicio, horarioFin, horasReservadas);
+                        });
+
                     document.getElementById('dia_reserva').value = info.startStr;
                     document.getElementById('espacio').value = espacioSelector.value;
                 },
-                eventClick: function(info) {
-                    if (confirm("¿Estás seguro que deseas eliminar esta reserva?")) {
-                        $.ajax({
-                            url: '{% url "eliminar_reserva" 0 %}'.replace('0', info.event.id),
-                            type: 'DELETE',
-                            headers: {
-                                'X-CSRFToken': '{{ csrf_token }}'
-                            },
-                            success: function() {
-                                info.event.remove();
-                                alert('Reserva eliminada exitosamente.');
-                            }
-                        });
-                    }
-                },
                 // Configuración para mostrar los días de lunes a domingo
+                firstDay: 1,
                 weekText: 'Semana',
                 weekNumberCalculation: 'ISO'
             });
@@ -149,4 +171,5 @@
             $(this).find('form')[0].reset();
         });
     </script>
+
 {% endblock content %}

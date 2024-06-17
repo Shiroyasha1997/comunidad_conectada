@@ -631,8 +631,6 @@ def eliminar_espacio(request, espacio_id):
     messages.success(request, 'Espacio eliminado exitosamente.')
     return redirect('gestionar_espacios')
 
-
-
 # Vistas para Reserva
 def crear_reserva(request):
     if request.method == 'POST':
@@ -659,16 +657,21 @@ def eliminar_reserva(request, reserva_id):
         messages.success(request, 'Reserva eliminada exitosamente.')
     return redirect('reservas')
 
+from datetime import datetime, timedelta
+
 def cargar_eventos(request):
     espacio_id = request.GET.get('espacio_id')
     eventos = []
     if espacio_id:
         reservas = Reserva.objects.filter(espacio_id=espacio_id)
         for reserva in reservas:
+            hora_inicio = reserva.hora_reserva
             eventos.append({
-                'title': f'Reserva de {reserva.usuario.get_full_name()}',
+                'title': f'Reservada: {hora_inicio.strftime("%H:%M")}',
                 'start': reserva.dia_reserva.isoformat(),
                 'end': reserva.dia_reserva.isoformat(),
                 'id': reserva.id,
             })
     return JsonResponse(eventos, safe=False)
+
+
