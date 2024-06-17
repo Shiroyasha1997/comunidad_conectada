@@ -657,21 +657,27 @@ def eliminar_reserva(request, reserva_id):
         messages.success(request, 'Reserva eliminada exitosamente.')
     return redirect('reservas')
 
+
 from datetime import datetime, timedelta
+from django.http import JsonResponse
+from .models import Reserva
 
 def cargar_eventos(request):
     espacio_id = request.GET.get('espacio_id')
+    dia = request.GET.get('dia')
     eventos = []
+    horas_reservadas = []
     if espacio_id:
         reservas = Reserva.objects.filter(espacio_id=espacio_id)
         for reserva in reservas:
             hora_inicio = reserva.hora_reserva
+            hora_fin = (datetime.combine(datetime.today(), hora_inicio) + timedelta(hours=1)).time()
             eventos.append({
-                'title': f'Reservada: {hora_inicio.strftime("%H:%M")}',
-                'start': reserva.dia_reserva.isoformat(),
-                'end': reserva.dia_reserva.isoformat(),
+                'title': f'Hora reservada: {hora_inicio.strftime("%H:%M")}',
+                'start': f"{reserva.dia_reserva}T{hora_inicio.strftime('%H:%M')}",
                 'id': reserva.id,
             })
-    return JsonResponse(eventos, safe=False)
+            if dia and reserva.dia_reserva.isoformat() == dia:
+                horas_reservadas.append(hora_inicio.strftime('%H:%M'))
 
-
+    return JsonResponse({'eventos': eventos, 'horas_reservadas': horas_reservadas})

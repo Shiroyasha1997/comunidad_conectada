@@ -92,12 +92,15 @@
 
             for (var hour = startHour; hour < endHour; hour++) {
                 var hourString = hour.toString().padStart(2, '0') + ":00";
-                if (!horasReservadas.includes(hourString)) {
-                    var option = document.createElement('option');
-                    option.value = hourString;
-                    option.text = hourString;
-                    horaReserva.appendChild(option);
+                var option = document.createElement('option');
+                option.value = hourString;
+                option.text = hourString;
+
+                if (horasReservadas.includes(hourString)) {
+                    option.disabled = true; // Disable option if the hour is reserved
+                    option.text += " (Reservada)"; // Add text to indicate the hour is reserved
                 }
+                horaReserva.appendChild(option);
             }
         }
 
@@ -132,7 +135,7 @@
                     var url = '{% url "cargar_eventos" %}?espacio_id=' + espacioId;
                     fetch(url)
                         .then(response => response.json())
-                        .then(data => successCallback(data));
+                        .then(data => successCallback(data.eventos));
                 },
                 select: function(info) {
                     var espacioSelector = document.getElementById('espacioSelector');
@@ -147,7 +150,7 @@
                     fetch('{% url "cargar_eventos" %}?espacio_id=' + espacioSelector.value + '&dia=' + info.startStr)
                         .then(response => response.json())
                         .then(data => {
-                            var horasReservadas = data.map(evento => evento.start.substring(11, 16)); // Only extract the hour part
+                            var horasReservadas = data.horas_reservadas; // Get reserved hours
                             populateHoraReserva(horarioInicio, horarioFin, horasReservadas);
                         });
 
