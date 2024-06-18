@@ -43,9 +43,16 @@ urlpatterns = [
     path('crear_reserva/', views.crear_reserva, name='crear_reserva'),
     path('cargar_eventos/', views.cargar_eventos, name='cargar_eventos'),
     path('eliminar_reserva/<int:reserva_id>/', views.eliminar_reserva, name='eliminar_reserva'),
-
     path('gestionar_espacios/', views.gestionar_espacios, name='gestionar_espacios'),
     path('editar_espacio/', views.editar_espacio, name='editar_espacio'),
     path('eliminar_espacio/<int:espacio_id>/', views.eliminar_espacio, name='eliminar_espacio'),
+
+    #ACTIVIDADES
+    path('actividades_agendar/', views.actividades_agendar, name='actividades_agendar'),
+    path('actividades/', views.actividades, name='actividades'),
+    path('crear_actividad', views.crear_actividad, name='crear_actividad'),
+    path('editar_actividad/<int:actividad_id>/', views.editar_actividad, name='editar_actividad'),
+    path('eliminar_actividad/<int:actividad_id>/', views.eliminar_actividad, name='eliminar_actividad'),
+    path('cambiar_estado_agendar/<int:id>/', views.cambiar_estado_agendar, name='cambiar_estado_agendar'),
 
 ]

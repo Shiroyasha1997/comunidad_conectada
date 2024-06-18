@@ -234,3 +234,38 @@ class ReservaForm(forms.ModelForm):
             'dia_reserva': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'espacio': forms.Select(attrs={'class': 'form-control'}),
         }
+
+
+#-------------------------------------------------------------------------------------------------------------------
+#ACTIVIDADES
+#-------------------------------------------------------------------------------------------------------------------
+from django import forms
+from django.core.validators import MaxLengthValidator
+from .models import Actividad, Agendar
+
+class ActividadForm(forms.ModelForm):
+    class Meta:
+        model = Actividad
+        fields = ['nombre', 'descripcion', 'cupos', 'disponible']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '100'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'maxlength': '500'}),
+            'cupos': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'disponible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ActividadForm, self).__init__(*args, **kwargs)
+        self.fields['nombre'].required = True
+        self.fields['descripcion'].required = True
+        self.fields['cupos'].required = True
+        self.fields['nombre'].validators.append(MaxLengthValidator(100))
+        self.fields['descripcion'].validators.append(MaxLengthValidator(500))
+
+class AgendarForm(forms.ModelForm):
+    class Meta:
+        model = Agendar
+        fields = ['estado']
+        widgets = {
+            'estado': forms.Select(attrs={'class': 'form-control'}),
+        }

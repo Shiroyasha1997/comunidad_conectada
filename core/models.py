@@ -116,3 +116,34 @@ class Reserva(models.Model):
 
     def __str__(self):
         return f'Reserva de {self.usuario.get_full_name()} en {self.espacio.nombre} el {self.dia_reserva} a las {self.hora_reserva}'
+
+#-------------------------------------------------------------------------------------------------------------------
+#ACTIVIDADES
+#-------------------------------------------------------------------------------------------------------------------
+from django.db import models
+from django.conf import settings
+
+class Actividad(models.Model):
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    cupos = models.PositiveIntegerField(default=0)
+    disponible = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nombre
+
+class Agendar(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('aprobada', 'Aprobada'),
+        ('rechazada', 'Rechazada'),
+    ]
+
+    actividad = models.ForeignKey(Actividad, on_delete=models.CASCADE, related_name='agendamientos')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    fecha_agenda = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='pendiente')
+
+    def __str__(self):
+        return f'{self.usuario.username} - {self.actividad.nombre}'

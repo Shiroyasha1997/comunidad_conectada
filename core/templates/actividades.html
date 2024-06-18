@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Proyectos
+    Actividades
 {% endblock title %}
 
 {% block content %}
     {% if messages %}
         {% for message in messages %}
-            {% if 'proyectos' in message.tags %}
+            {% if 'actividades' in message.tags %}
                 <div class="alert {% if 'success' in message.tags %}alert-success{% elif 'error' in message.tags %}alert-danger{% else %}alert-info{% endif %}">
                     {{ message }}
                 </div>
@@ -15,7 +15,8 @@
         {% endfor %}
     {% endif %}
 
-    <h1>Proyectos</h1>
+    <h1>Actividades</h1>
+
     <table class="table">
         <thead>
             <tr>
@@ -25,36 +26,40 @@
             </tr>
         </thead>
         <tbody>
-            {% for proyecto in proyectos %}
+            {% for actividad in actividades %}
                 <tr>
-                    <td>{{ proyecto.nombre }}</td>
-                    <td>{{ proyecto.fecha_creacion }}</td>
+                    <td>{{ actividad.nombre }}</td>
+                    <td>{{ actividad.fecha_creacion }}</td>
                     <td>
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#verProyectoModal{{ proyecto.id }}">Ver</button>
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editarProyectoModal{{ proyecto.id }}">Editar</button>
-                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#eliminarProyectoModal{{ proyecto.id }}">Eliminar</button>
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#verActividadModal{{ actividad.id }}">Ver</button>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editarActividadModal{{ actividad.id }}">Editar</button>
+                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#eliminarActividadModal{{ actividad.id }}">Eliminar</button>
                     </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No hay actividades disponibles.</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearProyectoModal">
-        Crear Proyecto
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearActividadModal">
+        Crear Actividad
     </button>
 
-    <!-- Modal para crear un nuevo proyecto -->
-    <div class="modal fade" id="crearProyectoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <!-- Modal para crear una nueva actividad -->
+    <div class="modal fade" id="crearActividadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Crear Nuevo Proyecto</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Crear Nueva Actividad</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" action="{% url 'crear_proyecto' %}">
+                    <form method="post" action="{% url 'crear_actividad' %}">
                         {% csrf_token %}
                         <!-- Nombre -->
                         <div class="form-group">
@@ -70,11 +75,6 @@
                             <small class="form-text text-muted">Descripción: Máximo 500 caracteres.</small>
                             <small id="descripcionCounter" class="form-text text-muted">0 / 500</small>
                         </div>
-                        <!-- Presupuesto -->
-                        <div class="form-group">
-                            {{ form.presupuesto.label_tag }}
-                            {{ form.presupuesto }}
-                        </div>
                         <!-- Cupos -->
                         <div class="form-group">
                             {{ form.cupos.label_tag }}
@@ -82,34 +82,34 @@
                         </div>
                         <!-- Disponible -->
                         <div class="form-check">
-                            <input type="checkbox" id="id_disponible" name="disponible" {% if proyecto.disponible %}checked{% endif %} class="form-check-input">
+                            <input type="checkbox" id="id_disponible" name="disponible" {% if actividad.disponible %}checked{% endif %} class="form-check-input">
                             <label class="form-check-label" for="id_disponible">Disponible</label>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-3">Crear Proyecto</button>
+                        <button type="submit" class="btn btn-primary mt-3">Crear Actividad</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal para eliminar proyecto -->
-    {% for proyecto in proyectos %}
-    <div class="modal fade" id="eliminarProyectoModal{{ proyecto.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <!-- Modales para eliminar actividad -->
+    {% for actividad in actividades %}
+    <div class="modal fade" id="eliminarActividadModal{{ actividad.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Eliminar Proyecto</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Eliminar Actividad</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p>¿Estás seguro de que deseas eliminar este proyecto?</p>
+                    <p>¿Estás seguro de que deseas eliminar esta actividad?</p>
                 </div>
                 <div class="modal-footer">
-                    <form method="post" action="{% url 'eliminar_proyecto' proyecto.id %}">
+                    <form method="post" action="{% url 'eliminar_actividad' actividad.id %}">
                         {% csrf_token %}
-                        <input type="hidden" name="delete_proyecto" value="{{ proyecto.id }}">
+                        <input type="hidden" name="delete_actividad" value="{{ actividad.id }}">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-danger">Eliminar</button>
                     </form>
@@ -119,41 +119,39 @@
     </div>
     {% endfor %}
 
-    <!-- Modal para ver detalles del proyecto y postulaciones -->
-    {% for proyecto in proyectos %}
-    <div class="modal fade" id="verProyectoModal{{ proyecto.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+    <!-- Modal para ver detalles de la actividad -->
+    {% for actividad in actividades %}
+    <div class="modal fade" id="verActividadModal{{ actividad.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">{{ proyecto.nombre }}</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">{{ actividad.nombre }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Nombre:</strong> {{ proyecto.nombre }}</p>
-                    <p><strong>Descripción:</strong> {{ proyecto.descripcion }}</p>
-                    <p><strong>Presupuesto:</strong> {{ proyecto.presupuesto }}</p>
-                    <p><strong>Cupos:</strong> {{ proyecto.cupos }}</p>
-                    <p><strong>Fecha de Creación:</strong> {{ proyecto.fecha_creacion }}</p>
-                    <h5>Postulaciones:</h5>
+                    <p><strong>Nombre:</strong> {{ actividad.nombre }}</p>
+                    <p><strong>Descripción:</strong> {{ actividad.descripcion }}</p>
+                    <p><strong>Cupos:</strong> {{ actividad.cupos }}</p>
+                    <p><strong>Fecha de Creación:</strong> {{ actividad.fecha_creacion }}</p>
+                    <h5>Agendamientos:</h5>
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Postulante</th>
-                                <th>Detalle</th>
+                                <th>Usuario</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for postulacion in proyecto.postulaciones.all %}
+                            {% for agendar in actividad.agendamientos.all %}
                             <tr>
-                                <td>{{ postulacion.usuario.get_full_name }}</td>
-                                <td>{{ postulacion.detalle }}</td>
-                                <td>{{ postulacion.estado }}</td>
+                                <td>{{ agendar.usuario.get_full_name }}</td>
+                                <td>{{ agendar.detalle }}</td>
+                                <td>{{ agendar.estado }}</td>
                                 <td>
-                                    <form method="post" action="{% url 'cambiar_estado_postulacion' postulacion.id %}">
+                                    <form method="post" action="{% url 'cambiar_estado_agendar' agendar.id %}">
                                         {% csrf_token %}
                                         <button type="submit" name="estado" value="aceptado" class="btn btn-success">Aprobar</button>
                                         <button type="submit" name="estado" value="rechazado" class="btn btn-danger">Rechazar</button>
@@ -162,7 +160,7 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="3">No hay postulaciones para este proyecto.</td>
+                                <td colspan="3">No hay agendamientos para esta actividad.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -173,47 +171,42 @@
     </div>
     {% endfor %}
 
-    <!-- Modal para editar proyectos -->
-    {% for proyecto in proyectos %}
-    <div class="modal fade" id="editarProyectoModal{{ proyecto.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <!-- Modal para editar actividad -->
+    {% for actividad in actividades %}
+    <div class="modal fade" id="editarActividadModal{{ actividad.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Editar Proyecto: {{ proyecto.nombre }}</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Editar Actividad - {{ actividad.nombre }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" action="{% url 'editar_proyecto' proyecto.id %}">
+                    <form method="post" action="{% url 'editar_actividad' actividad.id %}">
                         {% csrf_token %}
                         <!-- Nombre -->
                         <div class="form-group">
                             <label for="id_nombre">Nombre:</label>
-                            <input type="text" id="id_nombre" name="nombre" value="{{ proyecto.nombre }}" class="form-control" maxlength="100" required>
+                            <input type="text" id="id_nombre" name="nombre" value="{{ actividad.nombre }}" class="form-control" maxlength="100" required>
                             <small class="form-text text-muted">Nombre: Máximo 100 caracteres.</small>
-                            <small id="nombreCounter{{ proyecto.id }}" class="form-text text-muted">{{ proyecto.nombre|length }} / 100</small>
+                            <small id="nombreCounter{{ actividad.id }}" class="form-text text-muted">{{ actividad.nombre|length }} / 100</small>
                         </div>
                         <!-- Descripción -->
                         <div class="form-group">
                             <label for="id_descripcion">Descripción:</label>
-                            <textarea id="id_descripcion" name="descripcion" class="form-control" maxlength="500" required>{{ proyecto.descripcion }}</textarea>
+                            <textarea id="id_descripcion" name="descripcion" class="form-control" maxlength="500" required>{{ actividad.descripcion }}</textarea>
                             <small class="form-text text-muted">Descripción: Máximo 500 caracteres.</small>
-                            <small id="descripcionCounter{{ proyecto.id }}" class="form-text text-muted">{{ proyecto.descripcion|length }} / 500</small>
-                        </div>
-                        <!-- Presupuesto -->
-                        <div class="form-group">
-                            {{ form.presupuesto.label_tag }}
-                            {{ form.presupuesto }}
+                            <small id="descripcionCounter{{ actividad.id }}" class="form-text text-muted">{{ actividad.descripcion|length }} / 500</small>
                         </div>
                         <!-- Cupos -->
                         <div class="form-group">
                             <label for="id_cupos">Cupos:</label>
-                            <input type="number" id="id_cupos" name="cupos" value="{{ proyecto.cupos }}" class="form-control" min="0" required>
+                            <input type="number" id="id_cupos" name="cupos" value="{{ actividad.cupos }}" class="form-control" min="0" required>
                         </div>
                         <!-- Disponible -->
                         <div class="form-check">
-                            <input type="checkbox" id="id_disponible" name="disponible" {% if proyecto.disponible %}checked{% endif %} class="form-check-input">
+                            <input type="checkbox" id="id_disponible" name="disponible" {% if actividad.disponible %}checked{% endif %} class="form-check-input">
                             <label class="form-check-label" for="id_disponible">Disponible</label>
                         </div>
                         <button type="submit" class="btn btn-primary mt-3">Guardar Cambios</button>

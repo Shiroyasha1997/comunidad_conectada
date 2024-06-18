@@ -709,3 +709,114 @@ def cargar_eventos(request):
                 horas_reservadas.append(hora_inicio.strftime('%H:%M'))
 
     return JsonResponse({'eventos': eventos, 'horas_reservadas': horas_reservadas})
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Actividad, Agendar
+from .forms import ActividadForm, AgendarForm
+
+@login_required
+def actividades_agendar(request):
+    actividades = Actividad.objects.filter(disponible=True).order_by('-fecha_creacion')
+    actividades_agendadas = Agendar.objects.filter(usuario=request.user).values_list('actividad_id', flat=True)
+
+    if request.method == 'POST':
+        actividad_id = request.POST.get('actividad_id')
+        actividad = get_object_or_404(Actividad, id=actividad_id)
+        
+        # Verificar si el usuario ya tiene agendada esta actividad
+        if actividad.id in actividades_agendadas:
+            messages.error(request, 'Ya has agendado esta actividad.', extra_tags='actividades')
+            return redirect('actividades_agendar')
+
+        # Crear el agendamiento
+        agendar = Agendar.objects.create(
+            usuario=request.user,
+            actividad=actividad,
+            estado='pendiente'  # Establecer el estado inicial, puede ser pendiente, aprobada, etc.
+        )
+
+        # Reducir el número de cupos disponibles
+        actividad.cupos -= 1
+        if actividad.cupos <= 0:
+            actividad.disponible = False
+        actividad.save()
+
+        messages.success(request, 'Has agendado la actividad con éxito.', extra_tags='actividades')
+        return redirect('actividades_agendar')
+
+    return render(request, 'actividades_agendar.html', {
+        'actividades': actividades,
+        'actividades_agendadas': actividades_agendadas
+    })
+
+@login_required
+def actividades(request):
+    actividades = Actividad.objects.all()
+    form = ActividadForm()  # Se crea una instancia del formulario ActividadForm
+    return render(request, 'actividades.html', {'actividades': actividades, 'form': form})  # Se pasa 'form' al contexto
+
+@login_required
+def crear_actividad(request):
+    if request.method == 'POST':
+        form = ActividadForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Actividad creada con éxito', extra_tags='actividades')
+            return redirect('actividades')
+    else:
+        form = ActividadForm()
+    return render(request, 'actividades.html', {'actividades': Actividad.objects.all(), 'form': form})
+
+@login_required
+def editar_actividad(request, actividad_id):
+    actividad = get_object_or_404(Actividad, id=actividad_id)
+    if request.method == 'POST':
+        form = ActividadForm(request.POST, instance=actividad)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Actividad editada con éxito', extra_tags='actividades')
+            return redirect('actividades')
+    else:
+        form = ActividadForm(instance=actividad)
+    
+    actividades = Actividad.objects.all()  # Obtener todas las actividades
+    return render(request, 'actividades.html', {'actividades': actividades, 'form': form, 'edit_actividad_id': actividad.id})
+
+@login_required
+def eliminar_actividad(request, actividad_id):
+    actividad = get_object_or_404(Actividad, id=actividad_id)
+    if request.method == 'POST' and 'delete_actividad' in request.POST:
+        actividad.delete()
+        messages.success(request, 'La actividad se eliminó correctamente.', extra_tags='actividades')
+    else:
+        messages.error(request, 'Se produjo un error al intentar eliminar la actividad.', extra_tags='actividades')
+    return redirect('actividades')
+
+@login_required
+def cambiar_estado_agendar(request, id):
+    agendar = get_object_or_404(Agendar, id=id)
+    actividad = agendar.actividad
+    if request.method == 'POST':
+        estado = request.POST.get('estado')
+        if estado == 'rechazado':
+            # Eliminar la agenda
+            agendar.delete()
+
+            # Incrementar el número de cupos disponibles
+            actividad.cupos += 1
+            if actividad.cupos > 0:
+                actividad.disponible = True
+            actividad.save()
+
+            messages.success(request, 'Se cambió el estado del agendamiento a Rechazado', extra_tags='actividades')
+        else:
+            agendar.estado = estado
+            agendar.save()
+            messages.success(request, f'Agenda {estado} con éxito', extra_tags='actividades')
+
+    return redirect('actividades')
