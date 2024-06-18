@@ -250,7 +250,7 @@ def rechazar_solicitud(request, solicitud_id):
 
         # Enviar un correo electrónico informando sobre el rechazo
         subject = 'Solicitud de registro rechazada'
-        message = f'Hola {solicitud.first_name}, lamentamos informarte que tu solicitud de registro ha sido rechazada.'
+        message = f'Hola {solicitud.first_name}, lamentamos informarte que tu solicitud de registro ha sido rechazada. ATTE: {solicitud.first_name}'
         from_email = 'comunidad_conectada@outlook.com'  # Ingresa tu dirección de correo
         to_email = [solicitud.email]
         send_mail(subject, message, from_email, to_email)

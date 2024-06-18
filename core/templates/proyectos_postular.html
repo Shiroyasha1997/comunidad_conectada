@@ -25,6 +25,12 @@
                         </div>
                     </div>
                 </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center" role="alert">
+                        No hay proyectos disponibles en este momento.
+                    </div>
+                </div>
             {% endfor %}
         </div>
 

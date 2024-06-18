@@ -6,143 +6,188 @@
 {% endblock title %}
 
 {% block content %}
-<style>
-  /* Establecer un tamaño fijo para las cards */
-  .card {
-    height: 600px; /* Puedes ajustar este valor según tus necesidades */
-    padding: 10px;
-  }
-  
-  /* Establecer un tamaño fijo para las imágenes dentro de las cards y adaptarlas */
-  .card-img-top {
-    width: 100%;
-    height: 200px; /* Ajusta este valor según tus necesidades */
-    object-fit: contain;
-  }
-</style>
 
-<div class="container-fluid p-0">
-  <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" style="max-width: 800px; margin: 0 auto;">
-    <ol class="carousel-indicators">
-      <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-      <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-      <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
-      <li data-target="#carouselExampleIndicators" data-slide-to="3"></li>
-    </ol>
-    <div class="carousel-inner">
-      <div class="carousel-item active">
-        <img src="{% static 'images/slide1.png' %}" class="d-block w-100" alt="...">
-      </div>
-      <div class="carousel-item">
-        {% if request.user.is_authenticated %}
-          <a href="{% url 'certificados' %}">
-            <img src="{% static 'images/slide2.png' %}" class="d-block w-100" alt="...">
-          </a>
-        {% else %}
-          <a href="{% url 'ingresar' %}">
-            <img src="{% static 'images/slide2.png' %}" class="d-block w-100" alt="...">
-          </a>
-        {% endif %}
-      </div>      
-      <div class="carousel-item">
-        <img src="{% static 'images/slide3.png' %}" class="d-block w-100" alt="...">
-      </div>
-      <div class="carousel-item">
-        <img src="{% static 'images/slide4.png' %}" class="d-block w-100" alt="...">
+<h3 class="mt-5 text-center">Bienvenido a Comuidad Conectada</h3>
+
+{% if not request.user.is_authenticated %}
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-3 mb-3">
+        <a href="{% url 'ingresar' %}" class="btn btn-primary btn-block">
+          <i class="fas fa-sign-in-alt fa-3x d-block mx-auto mb-2"></i>
+          Iniciar sesión
+        </a>
       </div>
     </div>
-    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="sr-only">Anterior</span>
-    </a>
-    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="sr-only">Siguiente</span>
-    </a>
   </div>
-</div>
+  <div class="container mt-3">
+    <div class="row justify-content-center">
+      <div class="col-md-3 mb-3">
+        <a href="{% url 'registro' %}" class="btn btn-success btn-block">
+          <i class="fas fa-user-plus fa-3x d-block mx-auto mb-2"></i>
+          Registrarse
+        </a>
+      </div>
+    </div>
+  </div>
+{% endif %}
 
 {% if request.user.is_authenticated %}
   {% if es_admin %}
-    <h3 class="mt-3 text-center">Bienvenido, Admin de Django</h3>
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-3 mb-3">
+          <a href="{% url 'admin:index' %}" class="btn btn-primary btn-block">
+            <i class="fas fa-link fa-3x d-block mx-auto mb-2"></i>
+            Ir a Admin
+          </a>
+        </div>
+      </div>
+    </div>
+
   {% elif es_directivo %}
-    <h3 class="mt-3 text-center">Bienvenido, Directivo</h3>
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-3 mb-3">
+          <a href="{% url 'solicitudes' %}" class="btn btn-primary btn-block">
+            <i class="fas fa-handshake fa-3x d-block mx-auto mb-2"></i>
+            Solicitudes
+          </a>
+        </div>
+        <div class="col-md-3 mb-3">
+          <a href="{% url 'proyectos' %}" class="btn btn-primary btn-block">
+            <i class="fas fa-tasks fa-3x d-block mx-auto mb-2"></i>
+            Proyectos
+          </a>
+        </div>
+        <div class="col-md-3 mb-3">
+          <a href="{% url 'actividades' %}" class="btn btn-primary btn-block">
+            <i class="fas fa-calendar-alt fa-3x d-block mx-auto mb-2"></i>
+            Actividades
+          </a>
+        </div>
+        <div class="col-md-3 mb-3">
+          <a href="{% url 'gestionar_espacios' %}" class="btn btn-primary btn-block">
+            <i class="fas fa-building fa-3x d-block mx-auto mb-2"></i>
+            Espacios
+          </a>
+        </div>
+        <div class="col-md-3 mb-3">
+          <a href="{% url 'publicaciones' %}" class="btn btn-primary btn-block">
+            <i class="fas fa-newspaper fa-3x d-block mx-auto mb-2"></i>
+            Publicaciones
+          </a>
+        </div>
+      </div>
+    </div>
+
   {% elif es_residente %}
-    <h3 class="mt-3 text-center">Bienvenido, Residente</h3>
-  {% else %}
-    <h3 class="mt-3 text-center">Bienvenido</h3>
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-3 mb-3">
+          <a href="{% url 'certificados' %}" class="btn btn-primary btn-block">
+            <i class="fas fa-certificate fa-3x d-block mx-auto mb-2"></i>
+            Certificados
+          </a>
+        </div>
+        <div class="col-md-3 mb-3">
+          <a href="{% url 'reservas' %}" class="btn btn-primary btn-block">
+            <i class="fas fa-calendar-alt fa-3x d-block mx-auto mb-2"></i>
+            Reservar
+          </a>
+        </div>
+        <div class="col-md-3 mb-3">
+          <a href="{% url 'proyectos_postular' %}" class="btn btn-primary btn-block">
+            <i class="fas fa-tasks fa-3x d-block mx-auto mb-2"></i>
+            Proyectos
+          </a>
+        </div>
+        <div class="col-md-3 mb-3">
+          <a href="{% url 'actividades_agendar' %}" class="btn btn-primary btn-block">
+            <i class="fas fa-calendar-check fa-3x d-block mx-auto mb-2"></i>
+            Actividades
+          </a>
+        </div>
+      </div>
+    </div>
+
   {% endif %}
 {% endif %}
 
 <!-- Sección de Publicaciones -->
-<div class="container-fluid">
+<div class="container-fluid p-5">
   <div class="row">
-    
-    <!-- Carrusel de Noticias -->
-    <div class="col-md-4">
-      <h2 class="text-center">Noticias</h2>
-      <div id="noticiasCarousel" class="carousel slide" data-ride="carousel">
-        <div class="carousel-inner">
-          {% for noticia in noticias %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-              <div class="card mb-4">
-                {% if noticia.imagen %}
-                  <img src="{{ noticia.imagen.url }}" class="card-img-top" alt="{{ noticia.titulo }}">
-                {% endif %}
-                <div class="card-body">
-                  <h5 class="card-title">{{ noticia.titulo }}</h5>
-                  <p class="card-text">{{ noticia.detalle }}</p>
+    {% if noticias %}
+      <!-- Carrusel de Noticias -->
+      <div class="col-md-4">
+        <h2 class="text-center">Noticias</h2>
+        <div id="noticiasCarousel" class="carousel slide" data-ride="carousel">
+          <div class="carousel-inner">
+            {% for noticia in noticias %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <div class="card mb-4">
+                  {% if noticia.imagen %}
+                    <img src="{{ noticia.imagen.url }}" class="card-img-top" alt="{{ noticia.titulo }}">
+                  {% endif %}
+                  <div class="card-body">
+                    <h5 class="card-title">{{ noticia.titulo }}</h5>
+                    <p class="card-text">{{ noticia.detalle }}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          {% endfor %}
+            {% endfor %}
+          </div>
         </div>
       </div>
-    </div>
+    {% endif %}
 
-    <!-- Carrusel de Eventos -->
-    <div class="col-md-4">
-      <h2 class="text-center">Eventos</h2>
-      <div id="eventosCarousel" class="carousel slide" data-ride="carousel">
-        <div class="carousel-inner">
-          {% for evento in eventos %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-              <div class="card mb-4">
-                {% if evento.imagen %}
-                  <img src="{{ evento.imagen.url }}" class="card-img-top" alt="{{ evento.titulo }}">
-                {% endif %}
-                <div class="card-body">
-                  <h5 class="card-title">{{ evento.titulo }}</h5>
-                  <p class="card-text">{{ evento.detalle }}</p>
+    {% if eventos %}
+      <!-- Carrusel de Eventos -->
+      <div class="col-md-4">
+        <h2 class="text-center">Eventos</h2>
+        <div id="eventosCarousel" class="carousel slide" data-ride="carousel">
+          <div class="carousel-inner">
+            {% for evento in eventos %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <div class="card mb-4">
+                  {% if evento.imagen %}
+                    <img src="{{ evento.imagen.url }}" class="card-img-top" alt="{{ evento.titulo }}">
+                  {% endif %}
+                  <div class="card-body">
+                    <h5 class="card-title">{{ evento.titulo }}</h5>
+                    <p class="card-text">{{ evento.detalle }}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          {% endfor %}
+            {% endfor %}
+          </div>
         </div>
       </div>
-    </div>
+    {% endif %}
 
-    <!-- Carrusel de Anuncios -->
-    <div class="col-md-4">
-      <h2 class="text-center">Anuncios</h2>
-      <div id="anunciosCarousel" class="carousel slide" data-ride="carousel">
-        <div class="carousel-inner">
-          {% for anuncio in anuncios %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-              <div class="card mb-4">
-                {% if anuncio.imagen %}
-                  <img src="{{ anuncio.imagen.url }}" class="card-img-top" alt="{{ anuncio.titulo }}">
-                {% endif %}
-                <div class="card-body">
-                  <h5 class="card-title">{{ anuncio.titulo }}</h5>
-                  <p class="card-text">{{ anuncio.detalle }}</p>
+    {% if anuncios %}
+      <!-- Carrusel de Anuncios -->
+      <div class="col-md-4">
+        <h2 class="text-center">Anuncios</h2>
+        <div id="anunciosCarousel" class="carousel slide" data-ride="carousel">
+          <div class="carousel-inner">
+            {% for anuncio in anuncios %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <div class="card mb-4">
+                  {% if anuncio.imagen %}
+                    <img src="{{ anuncio.imagen.url }}" class="card-img-top" alt="{{ anuncio.titulo }}">
+                  {% endif %}
+                  <div class="card-body">
+                    <h5 class="card-title">{{ anuncio.titulo }}</h5>
+                    <p class="card-text">{{ anuncio.detalle }}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          {% endfor %}
+            {% endfor %}
+          </div>
         </div>
       </div>
-    </div>
+    {% endif %}
   </div>
 </div>
 
