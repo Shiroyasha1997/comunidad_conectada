@@ -5,7 +5,7 @@
 {% endblock title %}
 
 {% block content %}
-<div class="container mt-5 mb-5">
+<div class="container">
   <div class="row justify-content-center">
     <div class="col-md-8">
       <div class="card mt-4 shadow-sm">
@@ -43,7 +43,8 @@
                 {% endif %}
               </div>
             {% endfor %}
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between mt-5">
+              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#eliminarCuentaModal">Eliminar cuenta</button>
               <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#changePasswordModal">Cambiar contraseña</button>
               <button type="submit" class="btn btn-success">Guardar cambios</button>
             </div>
@@ -82,4 +83,30 @@
     </div>
   </div>
 </div>
+
+<!-- Modal para eliminar cuenta -->
+<div class="modal fade" id="eliminarCuentaModal" tabindex="-1" role="dialog" aria-labelledby="eliminarCuentaModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="eliminarCuentaModalLabel">Confirmar eliminación de cuenta</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Para confirmar la eliminación de tu cuenta, ingresa tu contraseña:</p>
+        <form method="post" action="{% url 'eliminar_cuenta' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="id_password">Contraseña</label>
+            <input type="password" class="form-control" id="id_password" name="password" required>
+          </div>
+          <button type="submit" class="btn btn-danger">Eliminar cuenta</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock content %}

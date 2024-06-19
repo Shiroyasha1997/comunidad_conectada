@@ -1,5 +1,8 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
+from djmoney.models.fields import MoneyField
 
 class CustomUser(AbstractUser):
     # Campos adicionales
@@ -30,7 +33,6 @@ class SolicitudInscripcion(models.Model):
     fecha_rechazo = models.DateTimeField(null=True, blank=True)
     notas = models.TextField(null=True, blank=True)
 
-from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Certificado(models.Model):
@@ -65,9 +67,6 @@ class Publicacion(models.Model):
 #-------------------------------------------------------------------------------------------------------------------
 #PROYECTOS
 #-------------------------------------------------------------------------------------------------------------------
-from django.conf import settings
-from djmoney.models.fields import MoneyField
-
 class Proyecto(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
@@ -120,9 +119,6 @@ class Reserva(models.Model):
 #-------------------------------------------------------------------------------------------------------------------
 #ACTIVIDADES
 #-------------------------------------------------------------------------------------------------------------------
-from django.db import models
-from django.conf import settings
-
 class Actividad(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()

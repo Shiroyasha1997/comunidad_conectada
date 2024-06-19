@@ -5,6 +5,8 @@
 {% endblock title %}
 
 {% block content %}
+    <h1 class="text-center mb-5">Actividades</h1>
+
     {% if messages %}
         {% for message in messages %}
             {% if 'actividades' in message.tags %}
@@ -15,38 +17,46 @@
         {% endfor %}
     {% endif %}
 
-    <h1>Actividades</h1>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Fecha de Creación</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for actividad in actividades %}
-                <tr>
-                    <td>{{ actividad.nombre }}</td>
-                    <td>{{ actividad.fecha_creacion }}</td>
-                    <td>
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#verActividadModal{{ actividad.id }}">Ver</button>
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editarActividadModal{{ actividad.id }}">Editar</button>
-                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#eliminarActividadModal{{ actividad.id }}">Eliminar</button>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="3">No hay actividades disponibles.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearActividadModal">
-        Crear Actividad
+    <!-- Botón Crear Actividad -->
+    <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#crearActividadModal">
+        <i class="fas fa-plus-circle"></i> Crear Actividad
     </button>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered table-striped bg-white shadow-sm rounded">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Fecha de Creación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for actividad in actividades %}
+                    <tr>
+                        <td>{{ actividad.nombre }}</td>
+                        <td>{{ actividad.fecha_creacion }}</td>
+                        <td>
+                            <!-- Botones con íconos para ver, editar y eliminar -->
+                            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#verActividadModal{{ actividad.id }}">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editarActividadModal{{ actividad.id }}">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#eliminarActividadModal{{ actividad.id }}">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">No hay actividades disponibles.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <!-- Modal para crear una nueva actividad -->
     <div class="modal fade" id="crearActividadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -92,8 +102,9 @@
         </div>
     </div>
 
-    <!-- Modales para eliminar actividad -->
+    <!-- Modales para eliminar, ver, editar actividades -->
     {% for actividad in actividades %}
+    <!-- Modal para eliminar actividad -->
     <div class="modal fade" id="eliminarActividadModal{{ actividad.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -117,10 +128,8 @@
             </div>
         </div>
     </div>
-    {% endfor %}
 
     <!-- Modal para ver detalles de la actividad -->
-    {% for actividad in actividades %}
     <div class="modal fade" id="verActividadModal{{ actividad.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -131,7 +140,6 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Nombre:</strong> {{ actividad.nombre }}</p>
                     <p><strong>Descripción:</strong> {{ actividad.descripcion }}</p>
                     <p><strong>Cupos:</strong> {{ actividad.cupos }}</p>
                     <p><strong>Fecha de Creación:</strong> {{ actividad.fecha_creacion }}</p>
@@ -145,23 +153,22 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for agendar in actividad.agendamientos.all %}
-                            <tr>
-                                <td>{{ agendar.usuario.get_full_name }}</td>
-                                <td>{{ agendar.detalle }}</td>
-                                <td>{{ agendar.estado }}</td>
-                                <td>
-                                    <form method="post" action="{% url 'cambiar_estado_agendar' agendar.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" name="estado" value="aceptado" class="btn btn-success">Aprobar</button>
-                                        <button type="submit" name="estado" value="rechazado" class="btn btn-danger">Rechazar</button>
-                                    </form>
-                                </td>
-                            </tr>
+                            {% for agendamiento in actividad.agendamientos.all %}
+                                <tr>
+                                    <td>{{ agendamiento.usuario.get_full_name }}</td>
+                                    <td>{{ agendamiento.estado }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'cambiar_estado_agendamiento' agendamiento.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" name="estado" value="aceptado" class="btn btn-success">Aprobar</button>
+                                            <button type="submit" name="estado" value="rechazado" class="btn btn-danger">Rechazar</button>
+                                        </form>
+                                    </td>
+                                </tr>
                             {% empty %}
-                            <tr>
-                                <td colspan="3">No hay agendamientos para esta actividad.</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3">No hay agendamientos para esta actividad.</td>
+                                </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -169,10 +176,8 @@
             </div>
         </div>
     </div>
-    {% endfor %}
 
     <!-- Modal para editar actividad -->
-    {% for actividad in actividades %}
     <div class="modal fade" id="editarActividadModal{{ actividad.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">

@@ -5,6 +5,8 @@
 {% endblock title %}
 
 {% block content %}
+    <h1 class="text-center mb-5">Proyectos</h1>
+
     {% if messages %}
         {% for message in messages %}
             {% if 'proyectos' in message.tags %}
@@ -15,33 +17,42 @@
         {% endfor %}
     {% endif %}
 
-    <h1>Proyectos</h1>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Fecha de Creación</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for proyecto in proyectos %}
-                <tr>
-                    <td>{{ proyecto.nombre }}</td>
-                    <td>{{ proyecto.fecha_creacion }}</td>
-                    <td>
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#verProyectoModal{{ proyecto.id }}">Ver</button>
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editarProyectoModal{{ proyecto.id }}">Editar</button>
-                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#eliminarProyectoModal{{ proyecto.id }}">Eliminar</button>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
+    <!-- Botón Crear Proyecto -->
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearProyectoModal">
-        Crear Proyecto
+        <i class="fas fa-plus-circle"></i> Crear Proyecto
     </button>
+
+    <div class="table-responsive mt-3"> <!-- Agrega esto para hacer la tabla responsive -->
+        <table class="table table-hover table-bordered table-striped bg-white shadow-sm rounded">
+            <thead class="thead-dark"> <!-- Encabezado oscuro -->
+                <tr>
+                    <th>Nombre</th>
+                    <th>Fecha de Creación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proyecto in proyectos %}
+                    <tr>
+                        <td>{{ proyecto.nombre }}</td>
+                        <td>{{ proyecto.fecha_creacion }}</td>
+                        <td>
+                            <!-- Botones con íconos -->
+                            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#verProyectoModal{{ proyecto.id }}">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editarProyectoModal{{ proyecto.id }}">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#eliminarProyectoModal{{ proyecto.id }}">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <!-- Modal para crear un nuevo proyecto -->
     <div class="modal fade" id="crearProyectoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -92,8 +103,9 @@
         </div>
     </div>
 
-    <!-- Modal para eliminar proyecto -->
+    <!-- Modales para eliminar, ver, editar proyectos -->
     {% for proyecto in proyectos %}
+    <!-- Modal para eliminar proyecto -->
     <div class="modal fade" id="eliminarProyectoModal{{ proyecto.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -117,10 +129,8 @@
             </div>
         </div>
     </div>
-    {% endfor %}
 
     <!-- Modal para ver detalles del proyecto y postulaciones -->
-    {% for proyecto in proyectos %}
     <div class="modal fade" id="verProyectoModal{{ proyecto.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -131,7 +141,6 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Nombre:</strong> {{ proyecto.nombre }}</p>
                     <p><strong>Descripción:</strong> {{ proyecto.descripcion }}</p>
                     <p><strong>Presupuesto:</strong> {{ proyecto.presupuesto }}</p>
                     <p><strong>Cupos:</strong> {{ proyecto.cupos }}</p>
@@ -171,10 +180,8 @@
             </div>
         </div>
     </div>
-    {% endfor %}
 
     <!-- Modal para editar proyectos -->
-    {% for proyecto in proyectos %}
     <div class="modal fade" id="editarProyectoModal{{ proyecto.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -191,7 +198,7 @@
                         <div class="form-group">
                             <label for="id_nombre">Nombre:</label>
                             <input type="text" id="id_nombre" name="nombre" value="{{ proyecto.nombre }}" class="form-control" maxlength="100" required>
-                            <small class="form-text text-muted">Nombre: Máximo 100 caracteres.</small>
+                            <small class="form-text text-muted">
                             <small id="nombreCounter{{ proyecto.id }}" class="form-text text-muted">{{ proyecto.nombre|length }} / 100</small>
                         </div>
                         <!-- Descripción -->

@@ -13,11 +13,13 @@
           <h2>Carrito de Compras</h2>
         </div>
         <div class="card-body">
-          <p class="lead">El costo del certificado de residencia es de $1000.</p>
+          <p class="text-center lead">El costo del certificado de residencia es de $1000.</p>
           <form method="post" action="{% url 'iniciar_pago' %}">
             {% csrf_token %}
             <div class="text-center">
-              <button type="submit" class="btn btn-primary btn-lg">Pagar</button>
+              <button type="submit" class="btn btn-primary btn-lg">
+                  <i class="fas fa-dollar-sign"></i> Pagar con WebPay
+              </button>
             </div>
           </form>
         </div>

@@ -5,11 +5,25 @@ Solicitudes de registro
 {% endblock title %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Solicitudes de Registro</h1>
+<div class="container mb-5">
+    <h1 class="text-center mb-5">Solicitudes de Registro</h1>
+    
+    <!-- Mostrar mensajes de éxito con el tag 'solicitudes' -->
+    {% if messages %}
+        <div class="alert-container">
+            {% for message in messages %}
+                {% if 'solicitudes' in message.tags %}
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
     {% if solicitudes %}
         <div class="table-responsive">
-            <table class="table table-hover table-bordered">
+            <table class="table table-hover table-bordered table-striped bg-white shadow-sm rounded">
                 <thead class="thead-dark">
                     <tr>
                         <th scope="col">Detalles</th>
@@ -64,7 +78,7 @@ Solicitudes de registro
             </table>
         </div>
     {% else %}
-        <p class="mt-3">No hay solicitudes de registro pendientes.</p>
+        <p class="text-center mt-5">No hay solicitudes de registro pendientes.</p>
     {% endif %}
 </div>
 {% endblock content %}

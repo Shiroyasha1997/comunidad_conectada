@@ -5,8 +5,8 @@
 {% endblock title %}
 
 {% block content %}
-    <div class="container mt-5">
-        <h1 class="mb-4">Agendar en Actividades</h1>
+    <div class="container">
+        <h1 class="mb-5 text-center">Participar en Actividades</h1>
         <div class="row">
             {% for actividad in actividades %}
                 <div class="col-md-4 mb-4">
@@ -22,7 +22,7 @@
                                 <form method="post" action="{% url 'actividades_agendar' %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="actividad_id" value="{{ actividad.id }}">
-                                    <button type="submit" class="btn btn-primary">Agendar</button>
+                                    <button type="submit" class="btn btn-primary">Participar</button>
                                 </form>
                             {% endif %}
                         </div>

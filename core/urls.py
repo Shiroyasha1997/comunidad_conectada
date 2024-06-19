@@ -13,6 +13,7 @@ urlpatterns = [
     path('solicitud/<int:solicitud_id>/rechazar/', views.rechazar_solicitud, name='rechazar_solicitud'),
     path('perfil/', views.perfil, name='perfil'),
     path('change-password/', views.change_password, name='change_password'),
+    path('eliminar-cuenta/', views.eliminar_cuenta, name='eliminar_cuenta'),  # Nueva URL para eliminar cuenta
 
     # CERTIFICADOS
     path('certificados/', views.certificados, name='certificados'),

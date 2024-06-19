@@ -5,7 +5,7 @@
 {% endblock title %}
 
 {% block content %}
-    <div class="container mt-5">
+    <div class="container">
         <div class="card shadow-sm">
             <div class="card-header text-center bg-success text-white">
                 <h4>Gestionar Espacios</h4>
@@ -46,7 +46,9 @@
                                 <!-- Options will be populated by JavaScript -->
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-3">Crear Espacio</button>
+                        <button type="submit" class="btn btn-primary mt-3">
+                            <i class="fas fa-plus-circle"></i> Crear Espacio
+                        </button>                        
                     </form>
                 </div>
 
@@ -65,10 +67,14 @@
                                     <p class="mb-0"><strong>Horario:</strong> {{ espacio.horario_inicio }} - {{ espacio.horario_fin }}</p>
                                 </div>
                                 <div>
-                                    <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editarEspacioModal" data-id="{{ espacio.id }}" data-nombre="{{ espacio.nombre }}" data-descripcion="{{ espacio.descripcion }}" data-dias="{{ espacio.dias_disponibles }}" data-inicio="{{ espacio.horario_inicio }}" data-fin="{{ espacio.horario_fin }}">Editar</button>
+                                    <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#editarEspacioModal" data-id="{{ espacio.id }}" data-nombre="{{ espacio.nombre }}" data-descripcion="{{ espacio.descripcion }}" data-dias="{{ espacio.dias_disponibles }}" data-inicio="{{ espacio.horario_inicio }}" data-fin="{{ espacio.horario_fin }}">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
                                     <form method="post" action="{% url 'eliminar_espacio' espacio.id %}" style="display:inline;">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este espacio?');">
+                                            <i class="fas fa-trash-alt"></i> Eliminar
+                                        </button>
                                     </form>
                                 </div>
                             </div>

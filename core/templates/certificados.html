@@ -5,48 +5,48 @@
 {% endblock title %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container">
   <div class="row justify-content-center">
     <div class="col-md-8">
-      <div class="text-center mb-4">
-        <h1>Certificados</h1>
-      </div>
-      <div class="text-center mb-4">
+      <h1 class="mb-5 text-center">Certificados</h1>
+      <div class="text-center mb-5">
         <form method="get" action="{% url 'iniciar_pago' %}">
           <button type="submit" class="btn btn-primary btn-lg">
-            <i class="fas fa-certificate"></i> Certificado de Residencia
+            <i class="fas fa-certificate"></i> Comprar Certificado de Residencia
           </button>
         </form>
       </div>
       
       <div>
-        <h2 class="text-center mb-4">Historial de Certificados</h2>
-        <table class="table table-bordered table-hover">
-          <thead class="thead-dark">
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Fecha de Compra</th>
-              <th scope="col">Detalle</th>
-              <th scope="col">Descargar</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Iterar sobre los certificados del usuario y mostrarlos en la tabla -->
-            {% for certificado in certificados_usuario %}
-            <tr>
-              <th scope="row">{{ forloop.counter }}</th>
-              <td>{{ certificado.fecha_compra }}</td>
-              <td>{{ certificado.detalle }}</td>
-              <td>
-                <!-- Botón de descarga del certificado -->
-                <a href="{{ certificado.pdf_certificado.url }}" class="btn btn-success" target="_blank">
-                  Descargar PDF
-                </a>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <h2 class="text-center mb-3">Historial de Certificados</h2>
+        <div class="table-responsive"> <!-- Para hacer la tabla responsive -->
+          <table class="table table-bordered table-hover bg-white"> <!-- Agregando fondo blanco -->
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Fecha de Compra</th>
+                <th scope="col">Detalle</th>
+                <th scope="col">Descargar</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Iterar sobre los certificados del usuario y mostrarlos en la tabla -->
+              {% for certificado in certificados_usuario %}
+              <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ certificado.fecha_compra }}</td>
+                <td>{{ certificado.detalle }}</td>
+                <td>
+                  <!-- Botón de descarga del certificado con icono -->
+                  <a href="{{ certificado.pdf_certificado.url }}" class="btn btn-success" target="_blank">
+                    <i class="fas fa-download"></i> Descargar PDF
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

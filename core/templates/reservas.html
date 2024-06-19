@@ -37,7 +37,9 @@
                         {% for item in reservas_con_espacio %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 {{ item.espacio_nombre }} - {{ item.reserva.dia_reserva }} - {{ item.reserva.hora_reserva }}
-                                <button class="btn btn-danger btn-sm" onclick="eliminarReserva({{ item.reserva.id }})">Eliminar</button>
+                                <button class="btn btn-danger btn-sm" onclick="eliminarReserva({{ item.reserva.id }})">
+                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                </button>
                             </li>
                         {% endfor %}
                     </ul>
@@ -68,7 +70,7 @@
                                 <!-- Options will be populated by JavaScript -->
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary">Crear Reserva</button>
+                        <button type="submit" class="btn btn-primary">Reservar Hora</button>
                     </form>
                 </div>
             </div>

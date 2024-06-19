@@ -1,16 +1,21 @@
 from django import forms
-from .models import SolicitudInscripcion, CustomUser
 from django.contrib.auth.forms import UserChangeForm, PasswordChangeForm
 from django.forms import DateInput
+from django.core.validators import MaxLengthValidator
+from djmoney.forms.widgets import MoneyWidget
+from datetime import datetime, timedelta
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
+    
+#-------------------------------------------------------------------------------------------------------------------
+#GESTION DE USUARIOS
+#-------------------------------------------------------------------------------------------------------------------
+from .models import SolicitudInscripcion, CustomUser
 
 class IngresarForm(forms.Form):
     username = forms.CharField(max_length=100, label="Nombre de Usuario", widget=forms.TextInput(attrs={'class': 'form-control'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}), label="Contraseña")
-
-class DateInput(forms.DateInput):
-    input_type = 'date'
-
-from datetime import datetime, timedelta
 
 class RegistroForm(forms.ModelForm):
     class Meta:
@@ -59,8 +64,6 @@ class RegistroForm(forms.ModelForm):
         if fecha_nacimiento > edad_minima:
             raise forms.ValidationError(self.Meta.error_messages['fecha_nacimiento']['min_age'])
         return fecha_nacimiento
-
-from django.contrib.auth.forms import UserChangeForm
 
 class PerfilForm(UserChangeForm):
     def __init__(self, *args, **kwargs):
@@ -141,7 +144,6 @@ class CustomPasswordChangeForm(PasswordChangeForm):
 #PUBLICACIONES
 #-------------------------------------------------------------------------------------------------------------------
 from .models import Publicacion
-from django.core.validators import MaxLengthValidator
 
 class PublicacionForm(forms.ModelForm):
     class Meta:
@@ -167,9 +169,7 @@ class PublicacionForm(forms.ModelForm):
 #-------------------------------------------------------------------------------------------------------------------
 #PROYECTOS
 #-------------------------------------------------------------------------------------------------------------------
-from django.core.validators import MaxLengthValidator
 from .models import Proyecto, Postulacion
-from djmoney.forms.widgets import MoneyWidget
 
 class ProyectoForm(forms.ModelForm):
     class Meta:
@@ -209,7 +209,6 @@ class PostulacionForm(forms.ModelForm):
 #-------------------------------------------------------------------------------------------------------------------
 #RESERVAS
 #-------------------------------------------------------------------------------------------------------------------
-from django import forms
 from .models import Espacio, Reserva
 
 class EspacioForm(forms.ModelForm):
@@ -223,7 +222,6 @@ class EspacioForm(forms.ModelForm):
             'horario_inicio': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'horario_fin': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
         }
-
 
 class ReservaForm(forms.ModelForm):
     class Meta:
@@ -239,8 +237,6 @@ class ReservaForm(forms.ModelForm):
 #-------------------------------------------------------------------------------------------------------------------
 #ACTIVIDADES
 #-------------------------------------------------------------------------------------------------------------------
-from django import forms
-from django.core.validators import MaxLengthValidator
 from .models import Actividad, Agendar
 
 class ActividadForm(forms.ModelForm):

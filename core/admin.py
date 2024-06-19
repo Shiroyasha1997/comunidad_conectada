@@ -30,17 +30,10 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(SolicitudInscripcion)
 admin.site.register(Certificado)
-
-class PublicacionAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'tipo', 'fecha_creacion')
-    search_fields = ('titulo', 'detalle')
-    list_filter = ('tipo', 'fecha_creacion')
-
-admin.site.register(Publicacion, PublicacionAdmin)
+admin.site.register(Publicacion)
 admin.site.register(Proyecto)
 admin.site.register(Postulacion)
 admin.site.register(Reserva)
 admin.site.register(Espacio)
-
 admin.site.register(Actividad)
 admin.site.register(Agendar)

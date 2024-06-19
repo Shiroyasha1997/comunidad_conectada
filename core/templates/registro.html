@@ -5,20 +5,20 @@
 {% endblock title %}
 
 {% block content %}
-<div class="container mt-5 mb-5">
+<div class="container">
   <div class="row justify-content-center">
     <div class="col-md-8">
       <div class="card">
         <div class="card-header text-center">
-          <h4>Solicitud de Inscripcion de Residente</h4>
+          <h3>Solicitud de Inscripcion de Residente</h3>
         </div>
         <div class="card-body">
-
-          <!-- Filtrar mensajes con la etiqueta 'registro' -->
+          
+          <!-- Mostrar mensajes de éxito -->
           {% if messages %}
             {% for message in messages %}
-              {% if 'registro' in message.tags %}
-                <div class="alert {% if 'success' in message.tags %}alert-success{% elif 'error' in message.tags %}alert-danger{% else %}alert-info{% endif %}">
+              {% if 'registro' in message.tags and 'success' in message.tags %}
+                <div class="alert alert-success">
                   {{ message }}
                 </div>
               {% endif %}
@@ -43,9 +43,9 @@
                 {% endif %}
               </div>
             {% endfor %}
-            <div class="text-center">
+            <div class="text-center mt-5">
               <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
-            </div>
+            </div>          
           </form>
         </div>
       </div>

@@ -13,22 +13,18 @@
   <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-md-3 mb-3 text-center">
-        <p>¿Tienes una cuenta?</p>
         <a href="{% url 'ingresar' %}" class="btn btn-primary btn-block">
           <i class="fas fa-sign-in-alt fa-3x d-block mx-auto mb-2"></i>
           Iniciar sesión
         </a>
+        <p>¿Tienes una cuenta?</p>
       </div>
-    </div>
-  </div>
-  <div class="container mt-3">
-    <div class="row justify-content-center">
       <div class="col-md-3 mb-3 text-center">
-        <p>¿No estas inscrito en la Junta de Vecinos?</p>
         <a href="{% url 'registro' %}" class="btn btn-success btn-block">
           <i class="fas fa-user-plus fa-3x d-block mx-auto mb-2"></i>
           Registrarse
         </a>
+        <p>¿No estás inscrito en la Junta de Vecinos?</p>
       </div>
     </div>
   </div>
@@ -119,7 +115,7 @@
 
 <!-- Sección de Publicaciones -->
 <div class="container-fluid p-5">
-  <div class="row">
+  <div class="row justify-content-center"> <!-- Añadido justify-content-center para centrar -->
     {% if noticias %}
       <!-- Carrusel de Noticias -->
       <div class="col-md-3 mb-3">
@@ -170,7 +166,7 @@
 
     {% if anuncios %}
       <!-- Carrusel de Anuncios -->
-      <div class="col-md-4">
+      <div class="col-md-3 mb-3">
         <h2 class="text-center">Anuncios</h2>
         <div id="anunciosCarousel" class="carousel slide" data-ride="carousel">
           <div class="carousel-inner">

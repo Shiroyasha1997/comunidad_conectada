@@ -6,14 +6,16 @@
 
 {% block content %}
 <div class="container">
-  <h1 class="text-center mb-4">Pago Exitoso</h1>
+  <h1 class="mb-5 text-center">Pago Exitoso!</h1>
   <p class="lead text-center">Su pago se ha realizado con éxito. ¡Gracias por su compra!</p>
   
   <div class="row justify-content-center">
     <div class="col-md-6">
       <div class="text-center mb-3">
-        <a href="{% url 'descargar_certificado' %}" class="btn btn-secondary btn-block">Descargar Certificado</a>
-      </div>
+        <a href="{% url 'descargar_certificado' %}" class="btn btn-primary btn-block">
+          <i class="fas fa-download"></i> Descargar Certificado
+        </a>
+      </div>      
     </div>
   </div>
 </div>

@@ -1,18 +1,15 @@
-import random
-import string
-from django.http import HttpResponse, HttpResponseBadRequest
+import random, string, uuid, os
+from datetime import datetime, timedelta
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils import timezone
 from django.utils.timezone import now
 from django.core.mail import send_mail
+from django.contrib import messages
 from django.contrib.auth.models import Group
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth import get_user_model, update_session_auth_hash
-from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout, get_user_model, update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CustomPasswordChangeForm, IngresarForm, RegistroForm, PerfilForm, PublicacionForm
-from .models import SolicitudInscripcion, CustomUser, Certificado, Publicacion
 from .decorators import residente_required, directivo_required
 
 CustomUser = get_user_model()
@@ -43,6 +40,9 @@ def inicio(request):
 #-------------------------------------------------------------------------------------------------------------------
 #AUTENTICACION
 #-------------------------------------------------------------------------------------------------------------------
+from .forms import CustomPasswordChangeForm, IngresarForm, RegistroForm, PerfilForm
+from .models import SolicitudInscripcion, CustomUser
+
 def cerrar_sesion(request):
     logout(request)
     return redirect('inicio')  # Redirige al inicio después de cerrar sesión
@@ -128,7 +128,20 @@ def change_password(request):
         form = CustomPasswordChangeForm(request.user)
     return render(request, 'change_password.html', {'form': form})
 
-from datetime import datetime, timedelta
+@login_required
+def eliminar_cuenta(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        user = authenticate(username=request.user.username, password=password)
+        if user is not None:
+            user.delete()
+            logout(request)
+            messages.success(request, '¡Tu cuenta ha sido eliminada exitosamente!')
+            return redirect('inicio')
+        else:
+            messages.error(request, 'La contraseña ingresada no es correcta. Por favor, intenta nuevamente.')
+            return redirect('perfil')
+    return redirect('perfil')
 
 def registro(request):
     if request.method == 'POST':
@@ -141,32 +154,27 @@ def registro(request):
             # Validación de nombre de usuario único en los usuarios registrados
             if CustomUser.objects.filter(username=username).exists():
                 form.add_error('username', 'El nombre de usuario ya está en uso. Por favor, elige otro.')
-                messages.error(request, 'El nombre de usuario ya está en uso. Por favor, elige otro.', extra_tags='registro')
                 return render(request, 'registro.html', {'form': form})
 
             # Validación de nombre de usuario único en las solicitudes de inscripción
             if SolicitudInscripcion.objects.filter(username=username).exists():
                 form.add_error('username', 'El nombre de usuario ya está en uso. Por favor, elige otro.')
-                messages.error(request, 'El nombre de usuario ya está en uso. Por favor, elige otro.', extra_tags='registro')
                 return render(request, 'registro.html', {'form': form})
 
             # Validación de RUN único en los usuarios registrados
             if CustomUser.objects.filter(run=run).exists():
                 form.add_error('run', 'El RUN ya está registrado. Por favor, ingresa otro.')
-                messages.error(request, 'El RUN ya está registrado. Por favor, ingresa otro.', extra_tags='registro')
                 return render(request, 'registro.html', {'form': form})
 
             # Validación de RUN único en las solicitudes de inscripción
             if SolicitudInscripcion.objects.filter(run=run).exists():
                 form.add_error('run', 'El RUN ya está registrado. Por favor, ingresa otro.')
-                messages.error(request, 'El RUN ya está registrado. Por favor, ingresa otro.', extra_tags='registro')
                 return render(request, 'registro.html', {'form': form})
 
             # Validación de edad mínima (14 años)
             edad_minima = datetime.now().date() - timedelta(days=14*365)  # Calcular fecha hace 14 años
             if fecha_nacimiento > edad_minima:
                 form.add_error('fecha_nacimiento', 'Debes tener al menos 14 años para registrarte.')
-                messages.error(request, 'Debes tener al menos 14 años para registrarte.', extra_tags='registro')
                 return render(request, 'registro.html', {'form': form})
 
             # Si todas las validaciones pasan, guarda el formulario
@@ -198,13 +206,16 @@ def aprobar_solicitud(request, solicitud_id):
         solicitud = SolicitudInscripcion.objects.get(id=solicitud_id)
         solicitud.estado = 'aceptada'
         solicitud.fecha_aprobacion = timezone.now()
+        
+        # Obtener el nombre del directivo
+        nombre_directivo = request.user.get_full_name()
 
         # Generar una contraseña aleatoria
         password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
 
         # Enviar la contraseña por correo electrónico
         subject = 'Bienvenido a nuestra comunidad'
-        message = f'Hola {solicitud.first_name}, tu solicitud ha sido aprobada.\n\nUsuario: {solicitud.username}\nContraseña: {password}'
+        message = f'Hola {solicitud.first_name}, tu solicitud ha sido aprobada.\n\nUsuario: {solicitud.username}\nContraseña: {password}. ATTE: {nombre_directivo}'
         from_email = 'comunidad_conectada@outlook.com'  # Ingresa tu dirección de correo
         to_email = [solicitud.email]
         send_mail(subject, message, from_email, to_email)
@@ -233,10 +244,10 @@ def aprobar_solicitud(request, solicitud_id):
         # Eliminar la solicitud aprobada de la base de datos
         solicitud.delete()
 
-        messages.success(request, "La solicitud ha sido aprobada. Se ha enviado un correo electrónico con los detalles de inicio de sesión.")
+        messages.success(request, "La solicitud ha sido aprobada. Se ha enviado un correo electrónico con los detalles de inicio de sesión.", extra_tags='solicitudes')
         return redirect('solicitudes')
     else:
-        messages.error(request, "No tienes permisos para aprobar esta solicitud.")
+        messages.error(request, "No tienes permisos para aprobar esta solicitud.", extra_tags='solicitudes')
         return redirect('solicitudes')
 
 @login_required
@@ -247,10 +258,13 @@ def rechazar_solicitud(request, solicitud_id):
         solicitud.estado = 'rechazada'
         solicitud.fecha_rechazo = timezone.now()
         solicitud.save()
+        
+        # Obtener el nombre del directivo
+        nombre_directivo = request.user.get_full_name()
 
         # Enviar un correo electrónico informando sobre el rechazo
         subject = 'Solicitud de registro rechazada'
-        message = f'Hola {solicitud.first_name}, lamentamos informarte que tu solicitud de registro ha sido rechazada. ATTE: {solicitud.first_name}'
+        message = f'Hola {solicitud.first_name}, lamentamos informarte que tu solicitud de registro ha sido rechazada. ATTE: {nombre_directivo}'
         from_email = 'comunidad_conectada@outlook.com'  # Ingresa tu dirección de correo
         to_email = [solicitud.email]
         send_mail(subject, message, from_email, to_email)
@@ -258,11 +272,12 @@ def rechazar_solicitud(request, solicitud_id):
         # Eliminar la solicitud rechazada de la base de datos
         solicitud.delete()
 
-        messages.success(request, "La solicitud ha sido rechazada. Se ha enviado un correo electrónico al solicitante.")
+        messages.success(request, "La solicitud ha sido rechazada. Se ha enviado un correo electrónico al solicitante.", extra_tags='solicitudes')
         return redirect('solicitudes')
     else:
-        messages.error(request, "No tienes permisos para rechazar esta solicitud.")
+        messages.error(request, "No tienes permisos para rechazar esta solicitud.", extra_tags='solicitudes')
         return redirect('solicitudes')
+
 
 #-------------------------------------------------------------------------------------------------------------------
 #CERTIFICADOS
@@ -270,15 +285,13 @@ def rechazar_solicitud(request, solicitud_id):
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+from .models import Certificado
 
 @login_required
 @residente_required
 def certificados(request):
     certificados_usuario = Certificado.objects.filter(usuario=request.user)
     return render(request, 'certificados.html', {'certificados_usuario': certificados_usuario})
-
-
-import uuid
 
 @login_required
 @residente_required
@@ -436,10 +449,10 @@ def pago_exitoso(request):
 #-------------------------------------------------------------------------------------------------------------------
 #PUBLICACIONES
 #-------------------------------------------------------------------------------------------------------------------
-@login_required
-@directivo_required
-def publicaciones(request):
+from .forms import PublicacionForm
+from .models import Publicacion
 
+def publicaciones(request):
     # Obtener todas las publicaciones
     publicaciones = Publicacion.objects.all()
 
@@ -448,7 +461,12 @@ def publicaciones(request):
         form = PublicacionForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+            # Agregar mensaje de éxito con el tag 'publicaciones'
+            messages.success(request, 'Publicación creada con éxito', extra_tags='publicaciones')
             return redirect('publicaciones')
+        else:
+            # Agregar mensaje de error con el tag 'publicaciones' si el formulario no es válido
+            messages.error(request, 'No se pudo crear la publicación. Por favor, corrige los errores.', extra_tags='publicaciones')
     else:
         # Si es una solicitud GET o no se envió un formulario válido
         form = PublicacionForm()
@@ -463,16 +481,13 @@ def editar_publicacion(request, publicacion_id):
         form = PublicacionForm(request.POST, request.FILES, instance=publicacion)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Publicación editada con éxito', extra_tags='publicacion')
+            messages.success(request, 'Publicación editada con éxito', extra_tags='publicaciones')
             return redirect('publicaciones')
     else:
         form = PublicacionForm(instance=publicacion)
     
     publicaciones = Publicacion.objects.all()
     return render(request, 'publicaciones.html', {'publicaciones': publicaciones, 'form': form, 'edit_publicacion_id': publicacion.id})
-
-
-import os
 
 @login_required
 @directivo_required
@@ -489,11 +504,11 @@ def eliminar_publicacion(request, publicacion_id):
         # Eliminar la publicación
         publicacion.delete()
 
-        # Agregar un mensaje de éxito
-        messages.success(request, 'La publicación se eliminó correctamente.', extra_tags='publicacion')
+        # Agregar un mensaje de éxito con el tag 'publicaciones'
+        messages.success(request, 'La publicación se eliminó correctamente.', extra_tags='publicaciones')
     else:
-        # Agregar un mensaje de error
-        messages.error(request, 'Se produjo un error al intentar eliminar la publicación.', extra_tags='publicacion')
+        # Agregar un mensaje de error con el tag 'publicaciones'
+        messages.error(request, 'Se produjo un error al intentar eliminar la publicación.', extra_tags='publicaciones')
 
     # Redirigir a la página de publicaciones
     return redirect('publicaciones')
@@ -502,13 +517,11 @@ def eliminar_publicacion(request, publicacion_id):
 #-------------------------------------------------------------------------------------------------------------------
 #PROYECTOS
 #-------------------------------------------------------------------------------------------------------------------
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from .models import Proyecto, Postulacion
 from .forms import ProyectoForm, PostulacionForm
 
 @login_required
+@residente_required
 def proyectos_postular(request):
     proyectos = Proyecto.objects.filter(disponible=True).order_by('-fecha_creacion')
     postulaciones_usuario = Postulacion.objects.filter(usuario=request.user)
@@ -550,6 +563,7 @@ def proyectos(request):
     return render(request, 'proyectos.html', {'proyectos': proyectos, 'form': form})  # Se pasa 'form' al contexto
 
 @login_required
+@directivo_required
 def crear_proyecto(request):
     if request.method == 'POST':
         form = ProyectoForm(request.POST)
@@ -562,6 +576,7 @@ def crear_proyecto(request):
     return render(request, 'proyectos.html', {'proyectos': Proyecto.objects.all(), 'form': form})
 
 @login_required
+@directivo_required
 def editar_proyecto(request, proyecto_id):
     proyecto = get_object_or_404(Proyecto, id=proyecto_id)
     if request.method == 'POST':
@@ -577,6 +592,7 @@ def editar_proyecto(request, proyecto_id):
     return render(request, 'proyectos.html', {'proyectos': proyectos, 'form': form, 'edit_proyecto_id': proyecto.id})
 
 @login_required
+@directivo_required
 def eliminar_proyecto(request, proyecto_id):
     proyecto = get_object_or_404(Proyecto, id=proyecto_id)
     if request.method == 'POST' and 'delete_proyecto' in request.POST:
@@ -587,6 +603,7 @@ def eliminar_proyecto(request, proyecto_id):
     return redirect('proyectos')
 
 @login_required
+@directivo_required
 def cambiar_estado_postulacion(request, id):
     postulacion = get_object_or_404(Postulacion, id=id)
     proyecto = postulacion.proyecto
@@ -612,13 +629,11 @@ def cambiar_estado_postulacion(request, id):
 #-------------------------------------------------------------------------------------------------------------------
 #RESERVAS
 #-------------------------------------------------------------------------------------------------------------------
-from django.shortcuts import render, redirect
-from django.contrib import messages
 from .models import Reserva, Espacio
 from .forms import ReservaForm, EspacioForm
-from django.http import JsonResponse
 
-# Vista combinada para crear y ver espacios
+@login_required
+@directivo_required
 def gestionar_espacios(request):
     if request.method == 'POST':
         form = EspacioForm(request.POST)
@@ -632,7 +647,8 @@ def gestionar_espacios(request):
     espacios = Espacio.objects.all()
     return render(request, 'gestionar_espacios.html', {'form': form, 'espacios': espacios})
 
-# Vista para editar espacio
+@login_required
+@directivo_required
 def editar_espacio(request):
     if request.method == 'POST':
         espacio_id = request.POST['espacio_id']
@@ -643,27 +659,42 @@ def editar_espacio(request):
             messages.success(request, 'Espacio editado exitosamente.')
             return redirect('gestionar_espacios')
 
-# Vista para eliminar espacio
+@login_required
+@directivo_required
 def eliminar_espacio(request, espacio_id):
     espacio = get_object_or_404(Espacio, id=espacio_id)
     espacio.delete()
     messages.success(request, 'Espacio eliminado exitosamente.')
     return redirect('gestionar_espacios')
 
-# Vistas para Reserva
+@login_required
+@residente_required
 def crear_reserva(request):
     if request.method == 'POST':
         form = ReservaForm(request.POST)
         if form.is_valid():
             reserva = form.save(commit=False)
             reserva.usuario = request.user
-            reserva.save()
-            messages.success(request, 'Reserva creada exitosamente.')
-            return redirect('reservas')
+
+            # Obtiene la fecha de la reserva
+            dia_reserva = reserva.dia_reserva
+
+            # Obtiene todas las reservas del usuario en la misma fecha
+            reservas_del_dia = Reserva.objects.filter(usuario=request.user, dia_reserva=dia_reserva)
+
+            # Verifica si el usuario ya tiene 2 reservas en el mismo día
+            if reservas_del_dia.count() >= 2:
+                messages.error(request, 'No puede realizar más de 2 reservas en un día.')
+                return redirect('reservas')
+            else:
+                reserva.save()
+                messages.success(request, 'Reserva creada exitosamente.')
+                return redirect('reservas')
     else:
         form = ReservaForm()
     return render(request, 'reservas.html', {'form': form})
 
+@login_required
 def reservas(request):
     reservas = Reserva.objects.filter(usuario=request.user)
     reservas_con_espacio = []
@@ -681,6 +712,8 @@ def reservas(request):
         'espacios': espacios
     })
 
+@login_required
+@residente_required
 def eliminar_reserva(request, reserva_id):
     reserva = Reserva.objects.get(id=reserva_id)
     if reserva:
@@ -688,8 +721,8 @@ def eliminar_reserva(request, reserva_id):
         messages.success(request, 'Reserva eliminada exitosamente.')
     return redirect('reservas')
 
-from datetime import datetime, timedelta
-
+@login_required
+@residente_required
 def cargar_eventos(request):
     espacio_id = request.GET.get('espacio_id')
     dia = request.GET.get('dia')
@@ -711,15 +744,14 @@ def cargar_eventos(request):
     return JsonResponse({'eventos': eventos, 'horas_reservadas': horas_reservadas})
 
 
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+#-------------------------------------------------------------------------------------------------------------------
+#ACTIVIDADES
+#-------------------------------------------------------------------------------------------------------------------
 from .models import Actividad, Agendar
 from .forms import ActividadForm, AgendarForm
 
 @login_required
+@residente_required
 def actividades_agendar(request):
     actividades = Actividad.objects.filter(disponible=True).order_by('-fecha_creacion')
     actividades_agendadas = Agendar.objects.filter(usuario=request.user).values_list('actividad_id', flat=True)
@@ -761,6 +793,7 @@ def actividades(request):
     return render(request, 'actividades.html', {'actividades': actividades, 'form': form})  # Se pasa 'form' al contexto
 
 @login_required
+@directivo_required
 def crear_actividad(request):
     if request.method == 'POST':
         form = ActividadForm(request.POST)
@@ -773,6 +806,7 @@ def crear_actividad(request):
     return render(request, 'actividades.html', {'actividades': Actividad.objects.all(), 'form': form})
 
 @login_required
+@directivo_required
 def editar_actividad(request, actividad_id):
     actividad = get_object_or_404(Actividad, id=actividad_id)
     if request.method == 'POST':
@@ -788,6 +822,7 @@ def editar_actividad(request, actividad_id):
     return render(request, 'actividades.html', {'actividades': actividades, 'form': form, 'edit_actividad_id': actividad.id})
 
 @login_required
+@directivo_required
 def eliminar_actividad(request, actividad_id):
     actividad = get_object_or_404(Actividad, id=actividad_id)
     if request.method == 'POST' and 'delete_actividad' in request.POST:
@@ -798,6 +833,7 @@ def eliminar_actividad(request, actividad_id):
     return redirect('actividades')
 
 @login_required
+@directivo_required
 def cambiar_estado_agendar(request, id):
     agendar = get_object_or_404(Agendar, id=id)
     actividad = agendar.actividad
