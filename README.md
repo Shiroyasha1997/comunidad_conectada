@@ -4,7 +4,7 @@
 "Comunidad Conectada" es un proyecto de Django para crear una plataforma de comunidad en línea. Ofrece autenticación de usuarios, una API RESTful, integración de pagos con Transbank SDK y generación de informes con ReportLab.
 
 ## Requisitos
-- Python 3.8+
+- Python 3.12 (o superior)
 - pip
 - virtualenv (opcional)
 - Git
@@ -32,8 +32,16 @@ pip install -r requirements.txt
 
 ### 4. Configurar la Base de Datos
 
-## Introducción
 La configuración predeterminada usa SQLite. Asegúrese de que settings.py tenga la siguiente configuración:
+
+```bash
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+```
 
 ### 5. Aplicar Migraciones y Crear Superusuario
 ```bash
@@ -47,5 +55,7 @@ python manage.py runserver
 ```
 
 Abra http://127.0.0.1:8000/ en su navegador.
+
+## Conclusion
 
 Este README proporciona los pasos necesarios para configurar el entorno de desarrollo para "Comunidad Conectada" usando SQLite. Siguiendo estos pasos, podrá preparar su entorno y contribuir al proyecto.
