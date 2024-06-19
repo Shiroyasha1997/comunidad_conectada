@@ -49,7 +49,7 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-### 5. Aplicar Migraciones y Crear Superusuario
+### 6. Ejecutar el Servidor de Desarrollo
 ```bash
 python manage.py runserver
 ```
