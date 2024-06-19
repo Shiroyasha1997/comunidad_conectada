@@ -16,9 +16,6 @@ python -m pip install --upgrade pip
 pip install django
 pip install pillow
 pip install djangorestframework
-pip install psycopg2-binary
-pip install transbank-sdk
-pip install reportlab
 
 python manage.py startapp core
 python manage.py startapp apirest
