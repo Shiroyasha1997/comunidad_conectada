@@ -215,7 +215,7 @@ def aprobar_solicitud(request, solicitud_id):
 
         # Enviar la contraseña por correo electrónico
         subject = 'Bienvenido a nuestra comunidad'
-        message = f'Hola {solicitud.first_name}, tu solicitud ha sido aprobada.\n\nUsuario: {solicitud.username}\nContraseña: {password}. ATTE: {nombre_directivo}'
+        message = f'Hola {solicitud.first_name}, tu solicitud ha sido aprobada.\n\nUsuario: {solicitud.username}\nContraseña: {password}.\nATTE: {nombre_directivo}'
         from_email = 'comunidad_conectada@outlook.com'  # Ingresa tu dirección de correo
         to_email = [solicitud.email]
         send_mail(subject, message, from_email, to_email)
@@ -264,7 +264,7 @@ def rechazar_solicitud(request, solicitud_id):
 
         # Enviar un correo electrónico informando sobre el rechazo
         subject = 'Solicitud de registro rechazada'
-        message = f'Hola {solicitud.first_name}, lamentamos informarte que tu solicitud de registro ha sido rechazada. ATTE: {nombre_directivo}'
+        message = f'Hola {solicitud.first_name}, lamentamos informarte que tu solicitud de registro ha sido rechazada.\nATTE: {nombre_directivo}'
         from_email = 'comunidad_conectada@outlook.com'  # Ingresa tu dirección de correo
         to_email = [solicitud.email]
         send_mail(subject, message, from_email, to_email)
